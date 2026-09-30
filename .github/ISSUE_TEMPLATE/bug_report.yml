@@ -1,0 +1,21 @@
+name: Bug report
+description: Report a reproducible problem
+body:
+  - type: input
+    id: version
+    attributes:
+      label: ClearFrame version and Windows version
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Describe the expected and actual behavior. Omit private links and credentials.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Relevant diagnostics
+      description: Remove personal paths, tokens, cookies and private URLs before pasting logs.

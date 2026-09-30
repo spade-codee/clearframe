@@ -1,0 +1,30 @@
+# Build products and downloaded tools
+/.build/
+/dist/
+/artifacts/
+/tools/
+/work/
+*.exe
+*.dll
+*.pdb
+*.zip
+*.part
+*.ytdl
+test-error.txt
+test-state/
+state.json*
+.clearframe/
+
+# Local settings and credentials
+.vs/
+.idea/
+*.user
+*.suo
+.env
+.env.*
+!.env.example
+cookies*.txt
+*.pem
+*.pfx
+Thumbs.db
+.DS_Store

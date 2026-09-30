@@ -1,0 +1,23 @@
+[
+  {
+    "project": "yt-dlp/yt-dlp",
+    "sha256": "66674953fe251b89f4d08c5f0e35e0728679bd67ab3d7d05c0562af101dd3e7a",
+    "url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.08.19/yt-dlp.exe",
+    "upstream_digest": "sha256:66674953fe251b89f4d08c5f0e35e0728679bd67ab3d7d05c0562af101dd3e7a",
+    "version": "2026.08.19"
+  },
+  {
+    "project": "denoland/deno",
+    "sha256": "a0c3101b4158d1dfb7d6a78a7bf0f3de80c96bb423c152beec8beb22786f2238",
+    "url": "https://github.com/denoland/deno/releases/download/v2.9.7/deno-x86_64-pc-windows-msvc.zip",
+    "upstream_digest": "sha256:a0c3101b4158d1dfb7d6a78a7bf0f3de80c96bb423c152beec8beb22786f2238",
+    "version": "v2.9.7"
+  },
+  {
+    "project": "yt-dlp/FFmpeg-Builds",
+    "sha256": "2ede31fb01a3d19d065e497052a94a7454209f6f0228fb979c51ec136e4f79d0",
+    "url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/autobuild-2026-09-30-00-16/ffmpeg-N-127014-g18ee27e67b-win64-gpl-shared.zip",
+    "upstream_digest": "sha256:2ede31fb01a3d19d065e497052a94a7454209f6f0228fb979c51ec136e4f79d0",
+    "version": "autobuild-2026-09-30-00-16"
+  }
+]

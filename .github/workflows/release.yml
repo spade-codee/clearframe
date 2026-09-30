@@ -1,0 +1,49 @@
+name: Publish release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Check release version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ($env:RELEASE_TAG -ne "v$version") { throw 'Tag and VERSION differ.' }
+      - name: Build
+        run: ./scripts/Build.ps1
+      - name: Test
+        run: ./scripts/Test.ps1
+      - name: Package
+        run: ./scripts/Package.ps1
+      - name: Publish tagged application
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $assets = Get-ChildItem artifacts/ClearFrame-*.zip,artifacts/ClearFrame-*.sha256 | ForEach-Object FullName
+          $notes = @"
+          Windows x64 application build for $env:RELEASE_TAG.
+
+          Extract the ZIP, run Get-Tools.ps1 in PowerShell 7 to fetch the required tools, then open ClearFrame.exe. Third-party executables are downloaded separately from pinned upstream releases. SHA-256 verification is included.
+
+          Requires .NET Framework 4.7.2+. This build is unsigned.
+          See CHANGELOG.md and the user guide in the repository for features and known limitations.
+          "@
+          $notes | Set-Content artifacts/release-notes.md
+          gh release create $env:RELEASE_TAG @assets --verify-tag --title "ClearFrame $env:RELEASE_TAG" --notes-file artifacts/release-notes.md
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub release creation failed.' }
