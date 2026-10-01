@@ -1,4 +1,13 @@
-# Verification — 30 September 2026
+# Verification — 1 October 2026
+
+## Version 0.3.0
+
+- 55 core checks and 10 offline WPF control checks passed, plus subprocess argument/cancellation/timeout checks.
+- Real FFmpeg exports on synthetic video passed for blend, blur and crop. Dimensions, audio and duration were verified.
+- Existing-output overwrite protection, unchanged source bytes, small edge blur regions and 90-degree rotation handling passed.
+- The editor and main interface were rendered without opening a desktop window and visually inspected. Full manual interaction is still unverified.
+- Dependency setup succeeded using pinned release archives and SHA-256 verification, including the versioned FFmpeg archive.
+- GitHub's Windows build/tests and tagged publication passed for the first public v0.2.0 release; later run results are recorded in GitHub Actions.
 
 ## Version 0.2 redesign and feature checks
 

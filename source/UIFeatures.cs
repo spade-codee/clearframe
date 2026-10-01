@@ -25,6 +25,7 @@ namespace ClearFrame {
    C<CheckBox>("FallbackBox").Checked+=(s,e)=>Save();C<CheckBox>("FallbackBox").Unchecked+=(s,e)=>Save();C<CheckBox>("SubtitleBox").Checked+=(s,e)=>Save();C<CheckBox>("SubtitleBox").Unchecked+=(s,e)=>Save();
    C<TextBox>("SearchBox").TextChanged+=(s,e)=>UpdateCount();
    foreach(var pair in new[]{new[]{"AllNav","all"},new[]{"ActiveNav","active"},new[]{"CompleteNav","complete"},new[]{"AudioNav","audio"},new[]{"FailedNav","failed"}}){string key=pair[1];C<Button>(pair[0]).Click+=(s,e)=>SetFilter(key);}
+   C<Button>("CleanupButton").Click+=(s,e)=>{if(running||inspecting||updating){Status("Stop downloads and finish the current check before opening video cleanup.");return;}new VideoCleanup(w,Path.Combine(home,"tools"),dataDir).Show();};
    C<Button>("BatchButton").Click+=(s,e)=>BatchDialog();
    C<Button>("OpenFolderButton").Click+=(s,e)=>{try{Directory.CreateDirectory(folder);Process.Start("explorer.exe",Core.Quote(folder));}catch(Exception ex){Status(ex.Message);}};
    C<Button>("PlayButton").Click+=(s,e)=>{var j=Selected();if(j==null||j.Status!="Complete"||!File.Exists(j.FilePath)){Status("Select a completed file that still exists on disk.");return;}try{Process.Start(new ProcessStartInfo(j.FilePath){UseShellExecute=true});}catch(Exception ex){Status(ex.Message);}};

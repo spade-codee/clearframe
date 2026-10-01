@@ -1,9 +1,10 @@
-# ClearFrame 0.2 for Windows
+# ClearFrame 0.3 for Windows
 
 A portable desktop downloader for YouTube videos, with source-quality video and sound, from 360p through 8K and uncapped best available.
 
 ## New in this version
 
+- **Video cleanup** opens a local editor for blending or blurring a selected fixed logo region, or cropping an edge. The original is kept and edits are exported to a new MP4. See [VIDEO-CLEANUP.md](VIDEO-CLEANUP.md).
 - Black and charcoal interface with lemon-lime actions, red stop/error accents, dark format selectors and a library sidebar.
 - Batch import of up to 100 individual links, with link validation and duplicate removal.
 - MP3 and M4A audio downloads alongside the existing video formats.
@@ -68,7 +69,7 @@ English subtitles are optional separate `.srt` files, including automatic captio
 
 YouTube may reject requests, rate-limit downloads or change its delivery methods. **Update engine** checks the official yt-dlp release. It does not update FFmpeg or Deno. Download success cannot be guaranteed for every video or network.
 
-This version supports individual public videos and Shorts, including batches of individual links. It does not import browser cookies, sign into YouTube, download live streams, expand playlists/channels, select alternate audio languages, or bypass account/region restrictions. Only download content you have permission to save.
+This version supports individual public videos and Shorts, including batches of individual links, plus cleanup of local videos. It does not import browser cookies, sign into YouTube, download live streams, expand playlists/channels, select alternate audio languages, or bypass account/region restrictions. Only download content you have permission to save.
 
 ## Privacy and maintenance
 

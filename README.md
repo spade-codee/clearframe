@@ -15,6 +15,7 @@ A portable Windows desktop app for saving YouTube video and audio to your own li
 - Searchable library, status filters, queue ordering, retry-all, playback and saved preferences.
 - Optional subtitles, bandwidth limits and automatic video/audio merging.
 - Verification of saved media streams, resolution and duration.
+- Local-video cleanup: select a fixed logo/text region to blend or blur, or crop away an edge. Preview the result and export a separate MP4.
 
 Higher quality and codecs depend on what the source offers. This is an early `0.x` release; complete UI-driven restart/resume testing is still outstanding.
 
@@ -43,6 +44,8 @@ cd clearframe
 ```
 
 The build uses the C# compiler included with .NET Framework. No .NET SDK or NuGet packages are needed. Automated tests are offline and do not download YouTube media. Tests write results and UI renders to `artifacts/`.
+
+After tool setup, run `./scripts/Test.ps1 -MediaTools ./dist/ClearFrame/tools` for optional synthetic-video export checks. See [video cleanup](docs/VIDEO-CLEANUP.md) for the editor's workflow and limits. Blending cannot reliably restore detail covered by an embedded logo.
 
 ## Versioning and releases
 
