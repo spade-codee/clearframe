@@ -282,6 +282,7 @@ namespace ClearFrame {
     if(args.Length>1&&args[0]=="--verify"){Core.ValidateMedia(File.ReadAllText(args[1]),int.Parse(args[2]),double.Parse(args[3],CultureInfo.InvariantCulture));return 0;}
     var app=new Application();app.DispatcherUnhandledException+=(s,e)=>{MessageBox.Show(e.Exception.Message,"ClearFrame");e.Handled=true;};
     if(args.Length>1&&args[0]=="--render-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"tools"),Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-state")).Render(args[1],args.Length>2?args[2]:null);return 0;}
+    if(args.Length>1&&args[0]=="--check-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","").CheckOfflineInterface(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--render"){var render=new MainWindow(true);if(args.Length>2&&args[2]=="--check-ui")render.CheckOfflineInterface(args[1]+".checks.txt");int width=args.Length>3?int.Parse(args[2]):1280;int height=args.Length>3?int.Parse(args[3]):880;render.Render(args[1],width,height);return 0;}
     bool created;using(var mutex=new Mutex(true,"Local\\ClearFrame.Desktop",out created)){if(!created){MessageBox.Show("ClearFrame is already running.","ClearFrame");return 0;}app.Run(new MainWindow(false).Window);}return 0;
    }catch(Exception ex){if(args.Length>0){File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-error.txt"),ex.ToString());return 1;}MessageBox.Show(ex.Message,"ClearFrame could not start");return 1;}
@@ -335,6 +336,12 @@ namespace ClearFrame {
    var rotated=CleanupCore.ReadInfo("{\"streams\":[{\"codec_type\":\"video\",\"width\":320,\"height\":180,\"side_data_list\":[{\"rotation\":90}]}],\"format\":{\"duration\":\"2\"}}");Assert(rotated.Width==180&&rotated.Height==320,"rotation dimensions");
    Reject(()=>CleanupCore.ReadInfo("{\"streams\":[{\"codec_type\":\"video\",\"width\":320,\"height\":180,\"color_transfer\":\"smpte2084\"}],\"format\":{\"duration\":\"2\"}}"),"HDR rejected before lossy SDR edit");
    Assert(CleanupCore.ExportArgs("input.mp4","output.mp4","crop=240:180:0:0",true).Contains("-n"),"export never overwrites");
+   Assert(CleanupCore.FrameTime("0.5",2)==0.5,"decimal preview time");
+   foreach(string time in new[]{"NaN","Infinity","-Infinity","-1","2","bad"})Reject(()=>CleanupCore.FrameTime(time,2),"invalid preview time");
+   foreach(string duration in new[]{"NaN","Infinity","-1","0"})Reject(()=>CleanupCore.ReadInfo("{\"streams\":[{\"codec_type\":\"video\",\"width\":320,\"height\":180}],\"format\":{\"duration\":\""+duration+"\"}}"),"invalid editor duration");
+   string cover="{\"codec_type\":\"video\",\"width\":600,\"height\":600,\"disposition\":{\"attached_pic\":1}}";
+   var covered=CleanupCore.ReadInfo("{\"streams\":["+cover+",{\"codec_type\":\"video\",\"width\":320,\"height\":180}],\"format\":{\"duration\":\"2\"}}");Assert(covered.Width==320&&covered.Height==180,"ignore cover art when reading dimensions");
+   Reject(()=>CleanupCore.ReadInfo("{\"streams\":["+cover+",{\"codec_type\":\"audio\"}],\"format\":{\"duration\":\"2\"}}"),"cover art alone is not video");
    string valid="{\"streams\":[{\"codec_type\":\"video\",\"width\":1920,\"height\":1080},{\"codec_type\":\"audio\"}],\"format\":{\"duration\":\"10\"}}";
    Core.ValidateMedia(valid,1080,10);count++;Reject(()=>Core.ValidateMedia(valid,720,10),"resolution mismatch");Reject(()=>Core.ValidateMedia(valid,1080,100),"truncation");
    Assert(Core.Quote("a b")=="\"a b\"","quote spaces");Assert(Core.Quote("C:\\folder\\")=="\"C:\\folder\\\\\"","quote trailing slash");Assert(Core.Quote("a\"b")=="\"a\\\"b\"","quote embedded quote");

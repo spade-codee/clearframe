@@ -4,6 +4,25 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-01
+
+### Improved
+
+- Instant **Show original / Show edit** comparison of the same preview frame.
+- Changing the rectangle or method discards stale edited previews and returns to the original. Changing the frame time clears both previews.
+
+### Fixed
+
+- Consistent video stream selection for metadata, previews and exports; embedded cover art is excluded.
+- Correct preview proportions and selection mapping for non-square-pixel video.
+- Invalid or non-finite frame times and source durations are rejected before processing.
+- Export-location failures show a message in the editor.
+
+### Verified
+
+- 68 core checks, 20 offline WPF control checks, subprocess checks and 16 synthetic-media checks passed locally.
+- Added preview generation tests for all three methods, plus silent export, cover art, multiple video streams and non-square-pixel preview tests.
+
 ## [0.3.0] - 2026-10-01
 
 ### Added
@@ -43,6 +62,7 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.1
 [0.3.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.0
 [0.2.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.2.0

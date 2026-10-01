@@ -1,5 +1,12 @@
 # Verification — 1 October 2026
 
+## Version 0.3.1
+
+- 68 core checks, 10 main-interface checks, 10 editor-control checks and subprocess argument/cancellation/timeout checks passed.
+- Editor checks construct real WPF controls without opening a desktop window: comparison toggle, stale-preview invalidation after numeric/drag/method/time changes, busy-state actions and non-square-pixel selection mapping.
+- 16 synthetic-media checks passed with the pinned FFmpeg build. Added all three preview filters, silent video export, attached cover art exclusion, first-video selection in a multistream file, and correct display proportions for non-square-pixel previews.
+- Full manual interaction remains unverified. GitHub CI runs the core, offline WPF and subprocess checks; media checks were run locally with the pinned tools.
+
 ## Version 0.3.0
 
 - 55 core checks and 10 offline WPF control checks passed, plus subprocess argument/cancellation/timeout checks.

@@ -15,7 +15,7 @@ A portable Windows desktop app for saving YouTube video and audio to your own li
 - Searchable library, status filters, queue ordering, retry-all, playback and saved preferences.
 - Optional subtitles, bandwidth limits and automatic video/audio merging.
 - Verification of saved media streams, resolution and duration.
-- Local-video cleanup: select a fixed logo/text region to blend or blur, or crop away an edge. Preview the result and export a separate MP4.
+- Local-video cleanup: select a fixed logo/text region to blend or blur, or crop away an edge. Compare original and edited frames instantly, then export a separate MP4.
 
 Higher quality and codecs depend on what the source offers. This is an early `0.x` release; complete UI-driven restart/resume testing is still outstanding.
 
