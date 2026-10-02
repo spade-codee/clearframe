@@ -4,7 +4,7 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
-## [0.3.1] - 2026-10-01
+## [0.3.1] - 2026-10-02
 
 ### Improved
 
