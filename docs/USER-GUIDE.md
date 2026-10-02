@@ -57,6 +57,9 @@ Select **MP3 · audio / best VBR** to convert the best available audio stream in
 - The queue runs one video at a time. Progress refers to the current stream, so it may restart when audio begins. Merging and verification appear as separate stages.
 - **Stop queue** stops the current worker and leaves remaining jobs queued. Choose the stopped item, **Retry selected**, then **Start queue**. Partial downloads resume when supported by the stream and engine.
 - Queue and history are saved in `%LOCALAPPDATA%\ClearFrame\state.json`. Interrupted jobs are restored as stopped; downloads never start automatically on app launch.
+- If history is missing or unreadable, ClearFrame tries `state.json.bak`. This backup may be one save behind. Unreadable files are copied to names containing `.corrupt-` before new history replaces them; saved media files are unaffected.
+- If history cannot be saved, a **History not saved** message stays at the start of the status bar until a save succeeds. Hover over the status bar to read the full message. Changes remain in memory and may be lost if you close before saving succeeds.
+- Duplicate checks compare the video link, destination, format and requested quality, rather than the resolution eventually downloaded. Requests with different subtitle settings or strict/fallback settings can be added separately. Audio requests ignore the video-resolution preference.
 - Partial files stay in `.clearframe` inside your chosen save folder. Unverified merged files are retained with an `.unverified-...` suffix when retried. Failed jobs may require additional disk space because those files are retained.
 - Completed files are moved into your chosen folder. Existing files are never intentionally overwritten; a numbered name is used for collisions.
 - Removing a queue/history item from the **•••** menu keeps downloaded and partial files. You can delete abandoned partial files manually while the queue is stopped.

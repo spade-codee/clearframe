@@ -31,7 +31,7 @@ namespace ClearFrame {
    C<Button>("PlayButton").Click+=(s,e)=>{var j=Selected();if(j==null||j.Status!="Complete"||!File.Exists(j.FilePath)){Status("Select a completed file that still exists on disk.");return;}try{Process.Start(new ProcessStartInfo(j.FilePath){UseShellExecute=true});}catch(Exception ex){Status(ex.Message);}};
    C<Button>("UpButton").Click+=(s,e)=>MoveSelected(-1);C<Button>("DownButton").Click+=(s,e)=>MoveSelected(1);
    var menu=new ContextMenu{Background=Brush("#22281B"),Foreground=Brush("#F4F4EF")};
-   var retry=new MenuItem{Header="Retry all failed / stopped"};retry.Click+=(s,e)=>{int count=0;foreach(var j in jobs.Where(x=>x.Status=="Failed"||x.Status=="Stopped").ToList()){j.Status="Queued";j.Progress=0;j.Detail="Ready to retry. Partial files kept.";count++;}Save();UpdateCount();Status(count+" items queued for retry. Select Start queue.");};menu.Items.Add(retry);
+   var retry=new MenuItem{Header="Retry all failed / stopped"};retry.Click+=(s,e)=>RetryAll();menu.Items.Add(retry);
    var clear=new MenuItem{Header="Clear completed history"};clear.Click+=(s,e)=>{int count=0;foreach(var j in jobs.Where(x=>x.Status=="Complete").ToList()){jobs.Remove(j);count++;}Save();UpdateCount();Status(count+" completed items removed from history. Saved files were kept.");};menu.Items.Add(clear);menu.Items.Add(new Separator());
    var details=new MenuItem{Header="Download details"};details.Click+=(s,e)=>ShowDetails();menu.Items.Add(details);
    var remove=new MenuItem{Header="Remove selected from history"};remove.Click+=(s,e)=>RemoveSelected();menu.Items.Add(remove);
@@ -61,7 +61,8 @@ namespace ClearFrame {
    add.Click+=(s,e)=>{try{var urls=Core.BatchUrls(input.Text);int added=0;foreach(string url in urls){if(Duplicate(url,Profile(),folder,Core.IsAudio(Profile())?0:TargetResolution()))continue;string id=url.Substring(url.Length-11);jobs.Add(new Job{Id=Guid.NewGuid().ToString("N"),Url=url,VideoId=id,Title="YouTube · "+id,Container=Core.Container(Profile()),Profile=Profile(),TargetResolution=TargetResolution(),Strict=C<CheckBox>("FallbackBox").IsChecked!=true,Subtitles=!Core.IsAudio(Profile())&&C<CheckBox>("SubtitleBox").IsChecked==true,RateLimit=Rate(),Resolution=Core.IsAudio(Profile())?0:TargetResolution(),Folder=folder,Status="Queued",Detail="Batch import · Awaiting source check",Log="",FilePath=""});added++;}Save();SetFilter("all");Status(added+" items added. "+(urls.Count-added)+" duplicates skipped. Select Start queue.");dialog.Close();}catch(Exception ex){error.Foreground=Brush("#FF8B83");error.Text=ex.Message;}};
    dialog.Content=grid;dialog.ShowDialog();
   }
-  bool Duplicate(string url,string profile,string destination,int resolution){return jobs.Any(x=>x.Url==url&&x.Profile==profile&&x.Resolution==resolution&&string.Equals(x.Folder,destination,StringComparison.OrdinalIgnoreCase)&&x.Status!="Failed"&&x.Status!="Stopped");}
+  int RetryAll(){int count=0;foreach(var j in jobs.Where(x=>x!=active&&(x.Status=="Failed"||x.Status=="Stopped")).ToList()){j.Status="Queued";j.Progress=0;j.Detail="Ready to retry. Partial files kept.";count++;}Save();UpdateCount();Status(count+" items queued for retry."+(running?" The current queue will pick them up unless stopped.":" Select Start queue."));return count;}
+  bool Duplicate(string url,string profile,string destination,int resolution){bool audio=Core.IsAudio(profile),strict=C<CheckBox>("FallbackBox").IsChecked!=true,subtitles=!audio&&C<CheckBox>("SubtitleBox").IsChecked==true;return jobs.Any(x=>x.Url==url&&x.Profile==profile&&(audio||x.TargetResolution==resolution&&(resolution==0||x.Strict==strict))&&x.Subtitles==subtitles&&string.Equals(x.Folder,destination,StringComparison.OrdinalIgnoreCase)&&x.Status!="Failed"&&x.Status!="Stopped");}
   public void CheckOfflineInterface(string report){
    preferencesReady=false;int checks=0;
    Action<bool,string> assert=(ok,name)=>{if(!ok)throw new Exception("UI check failed: "+name);checks++;};
@@ -76,6 +77,23 @@ namespace ClearFrame {
    C<ComboBox>("FormatBox").SelectedIndex=0;assert(C<ComboBox>("QualityBox").IsEnabled&&C<CheckBox>("SubtitleBox").IsEnabled,"video controls restored");
    C<ComboBox>("SpeedBox").SelectedIndex=2;assert(Rate()=="2M","bandwidth setting");
    var pref=Core.Json.Deserialize<Dictionary<string,object>>(Core.Json.Serialize(Preferences()));assert(Core.N(pref,"speed")==2&&Core.N(pref,"format")==0,"preference serialization");
+   var recovery=new Job{Id="r",Title="Recovery",Url="https://www.youtube.com/watch?v=abcdefghijk",Profile="mp4",Container="mp4",Folder=folder,TargetResolution=0,Resolution=2160,Strict=true,Status="Complete"};jobs.Add(recovery);
+   assert(Duplicate(recovery.Url,"mp4",folder,0),"best quality deduplicates by requested quality");
+   recovery.TargetResolution=1080;recovery.Resolution=720;recovery.Strict=false;C<CheckBox>("FallbackBox").IsChecked=true;assert(Duplicate(recovery.Url,"mp4",folder,1080),"fallback deduplicates by request");
+   C<CheckBox>("FallbackBox").IsChecked=false;assert(!Duplicate(recovery.Url,"mp4",folder,1080),"strict quality remains distinct");
+   recovery.Strict=true;C<CheckBox>("SubtitleBox").IsChecked=true;assert(!Duplicate(recovery.Url,"mp4",folder,1080),"subtitle request remains distinct");C<CheckBox>("SubtitleBox").IsChecked=false;
+   recovery.Profile="mp3";assert(Duplicate(recovery.Url,"mp3",folder,4320),"audio ignores video quality preference");
+   recovery.Status="Stopped";assert(!Duplicate(recovery.Url,"mp3",folder,4320),"stopped item does not block new request");
+   var stopped=new Job{Status="Stopped",Progress=70};jobs.Add(stopped);active=recovery;int retried=RetryAll();assert(retried==1&&stopped.Status=="Queued"&&stopped.Progress==0&&recovery.Status=="Stopped","retry all skips active stopping item");active=null;
+   foreach(string state in new[]{"Checking","Downloading","Finishing","Verifying"}){var interrupted=new Job{Status=state};RestoreJob(interrupted);assert(interrupted.Status=="Stopped","interrupted "+state+" remains stopped on restart");}
+   foreach(string state in new[]{"Queued","Complete","Failed","Stopped"}){var stable=new Job{Status=state};RestoreJob(stable);assert(stable.Status==state,"restore preserves "+state);}
+   persistenceError="test write failure";Status("Added.");assert(C<TextBlock>("StatusText").Text.StartsWith("History not saved: test write failure")&&(string)C<TextBlock>("StatusText").ToolTip==C<TextBlock>("StatusText").Text,"save failure stays visible with full tooltip");persistenceError=null;
+   active=recovery;recovery.Status="Downloading";ApplyDownloadLine(recovery,"CFP|42.5%|1MiB/s|00:12",System.Threading.CancellationToken.None);assert(recovery.Progress==42.5&&recovery.Detail.Contains("00:12"),"active progress updates");
+   ApplyDownloadLine(recovery,"CFP|NaN|1MiB/s|00:12",System.Threading.CancellationToken.None);assert(recovery.Progress==42.5,"non-finite progress ignored");
+   ApplyDownloadLine(recovery,"[Merger] merging",System.Threading.CancellationToken.None);assert(recovery.Status=="Finishing","active merge transition");
+   foreach(string state in new[]{"Stopped","Failed","Complete","Verifying","Queued"}){recovery.Status=state;recovery.Progress=77;recovery.Detail="Keep this";ApplyDownloadLine(recovery,"[Merger] delayed",System.Threading.CancellationToken.None);ApplyDownloadLine(recovery,"CFP|10%|1MiB/s|00:12",System.Threading.CancellationToken.None);assert(recovery.Status==state&&recovery.Progress==77&&recovery.Detail=="Keep this","late output preserves "+state);}
+   recovery.Status="Downloading";ApplyDownloadLine(recovery,"[Merger] delayed",new System.Threading.CancellationToken(true));assert(recovery.Status=="Downloading","cancelled attempt cannot update state");active=null;
+   ApplyDownloadLine(recovery,"CFP|20%|1MiB/s|00:12",System.Threading.CancellationToken.None);assert(recovery.Progress==77,"inactive attempt cannot update progress");
    C<ComboBox>("SpeedBox").SelectedIndex=0;jobs.Clear();SetFilter("all");preferencesReady=true;Status("Ready. Exact quality, with no upscaling or silent downgrades.");File.WriteAllText(report,checks+" offline WPF control checks passed. No desktop window or network request was opened.");
   }
  }

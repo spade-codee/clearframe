@@ -13,6 +13,7 @@ A portable Windows desktop app for saving YouTube video and audio to your own li
 - Formats: MP4, MKV, WebM and MOV; audio-only MP3 and M4A.
 - Batches of up to 100 individual YouTube links, with validation and deduplication.
 - Searchable library, status filters, queue ordering, retry-all, playback and saved preferences.
+- Automatic download-history backup recovery, with damaged-file preservation and visible save errors.
 - Optional subtitles, bandwidth limits and automatic video/audio merging.
 - Verification of saved media streams, resolution and duration.
 - Local-video cleanup: select a fixed logo/text region to blend or blur, or crop away an edge. Compare original and edited frames instantly, then export a separate MP4.

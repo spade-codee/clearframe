@@ -1,5 +1,12 @@
 # Verification — 2 October 2026
 
+## Version 0.3.2
+
+- 68 core checks, 36 main-interface checks, 10 editor-control checks and subprocess argument/cancellation/timeout checks passed.
+- 12 filesystem checks use temporary fixtures: save/load roundtrips, atomic backup rotation, corrupt/missing primary recovery, preserving both damaged histories, a locked destination, and temporary-file cleanup.
+- New offline WPF cases cover requested-quality deduplication, audio and subtitle settings, retry-all exclusion of an active item, restart status normalization, persistent save-error text and delayed progress messages.
+- These checks do not simulate a full running desktop restart or a live download resuming. Media-cleanup code was unchanged; its prior synthetic-media results are recorded below.
+
 ## Version 0.3.1
 
 - 68 core checks, 10 main-interface checks, 10 editor-control checks and subprocess argument/cancellation/timeout checks passed.

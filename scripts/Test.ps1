@@ -29,6 +29,11 @@ if ($LASTEXITCODE -ne 0) { throw 'Process fixture compilation failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Process test compilation failed.' }
 & (Join-Path $output 'ProcessTests.exe') (Join-Path $output 'ProcessFixture.exe') (Join-Path $artifacts 'process-tests.txt')
 if ($LASTEXITCODE -ne 0) { throw 'Process checks failed.' }
+& $compiler /nologo "/reference:$app" "/out:$output\StateTests.exe" (Join-Path $root 'tests\StateTests.cs')
+if ($LASTEXITCODE -ne 0) { throw 'State test compilation failed.' }
+& (Join-Path $output 'StateTests.exe') (Join-Path $artifacts 'state-fixtures') (Join-Path $artifacts 'state-tests.txt')
+if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $artifacts 'state-tests.txt'); throw 'State checks failed.' }
+Get-Content (Join-Path $artifacts 'state-tests.txt')
 Get-Content (Join-Path $artifacts 'core-tests.txt'),(Join-Path $artifacts 'interface.png.checks.txt'),(Join-Path $artifacts 'editor-controls.txt'),(Join-Path $artifacts 'process-tests.txt')
 if ($MediaTools) {
     $references = @('System.Web.Extensions.dll','WPF\WindowsBase.dll','WPF\PresentationCore.dll','WPF\PresentationFramework.dll')

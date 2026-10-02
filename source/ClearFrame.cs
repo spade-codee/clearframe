@@ -170,10 +170,13 @@ namespace ClearFrame {
   readonly string home=AppDomain.CurrentDomain.BaseDirectory; string dataDir; string folder; bool running,inspecting,updating,closing;
   Dictionary<string,object> preview; Selection selection; string previewUrl;
   CancellationTokenSource cancellation; CancellationTokenSource inspectionCancellation; Job active;
+  readonly StateStore stateStore;
+  string persistenceError;
   public MainWindow(bool testMode) {
    using(var s=Assembly.GetExecutingAssembly().GetManifestResourceStream("Main.xaml")) w=(Window)XamlReader.Load(s);
    C<TextBlock>("EngineStatus").Text="v"+Assembly.GetExecutingAssembly().GetName().Version.ToString(3)+"  /  WINDOWS x64";
    dataDir=testMode?Path.Combine(home,"test-state"):Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ClearFrame");
+   stateStore=new StateStore(Path.Combine(dataDir,"state.json"));
    folder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),"ClearFrame");
    if(!testMode) Load();
    C<TextBlock>("FolderText").Text=folder; C<ListView>("QueueList").ItemsSource=jobs;
@@ -197,7 +200,7 @@ namespace ClearFrame {
   }
   T C<T>(string name) where T:class {return (T)w.FindName(name);}
   Job Selected(){return C<ListView>("QueueList").SelectedItem as Job;}
-  void Status(string value){C<TextBlock>("StatusText").Text=value;}
+  void Status(string value){var text=C<TextBlock>("StatusText");text.Text=string.IsNullOrEmpty(persistenceError)?value:"History not saved: "+persistenceError+" · "+value;text.ToolTip=text.Text;}
   void UI(Action action){if(!w.Dispatcher.HasShutdownStarted) w.Dispatcher.BeginInvoke(action);}
   string Tool(string name){return Path.Combine(home,"tools",name+".exe");}
   int TargetResolution(){return new[]{1080,1440,2160,4320,0,720,480,360}[C<ComboBox>("QualityBox").SelectedIndex];}
@@ -220,11 +223,17 @@ namespace ClearFrame {
    catch(Exception ex){selection=null;C<Button>("AddButton").IsEnabled=false;C<TextBlock>("PreviewDetail").Text=ex.Message;Status(ex.Message);}
   }
   void Add(){if(preview==null||selection==null)return;string id=Core.S(preview,"id");string container=Core.Container(Profile());
-   if(jobs.Any(x=>x.VideoId==id&&x.Profile==Profile()&&x.Resolution==selection.Resolution&&string.Equals(x.Folder,folder,StringComparison.OrdinalIgnoreCase)&&x.Status!="Failed"&&x.Status!="Stopped")){Status("This video is already in your queue or history for that destination and quality.");return;}
+   if(Duplicate(previewUrl,Profile(),folder,TargetResolution())){Status("This video is already in your queue or history with these download settings.");return;}
    jobs.Add(new Job{Id=Guid.NewGuid().ToString("N"),Url=previewUrl,VideoId=id,Title=Core.S(preview,"title"),Selector=selection.Selector,Container=container,Profile=Profile(),TargetResolution=TargetResolution(),Strict=C<CheckBox>("FallbackBox").IsChecked!=true,Subtitles=!Core.IsAudio(Profile())&&C<CheckBox>("SubtitleBox").IsChecked==true,RateLimit=Rate(),Resolution=selection.Resolution,Duration=Core.N(preview,"duration"),EstimatedBytes=selection.Bytes,Folder=folder,Status="Queued",Detail=(Core.IsAudio(Profile())?"Audio":selection.Resolution+"p")+" · "+container.ToUpperInvariant()+" · "+Core.Size(selection.Bytes),Log="",FilePath=""});Save();UpdateCount();Status("Added. Select Start queue when you're ready.");
   }
   void UpdateCount(){RefreshLibrary();}
   void Log(Job j,string line){if(line.Length>4000)line=line.Substring(0,4000);j.Log=(j.Log??"")+line+Environment.NewLine;if(j.Log.Length>50000)j.Log=j.Log.Substring(j.Log.Length-50000);}
+  void ApplyDownloadLine(Job j,string line,CancellationToken ct){
+   Log(j,line);
+   if(j!=active||ct.IsCancellationRequested||(j.Status!="Downloading"&&j.Status!="Finishing"))return;
+   if(line.StartsWith("CFP|")){var parts=line.Split('|');double p;if(parts.Length>=4&&double.TryParse(parts[1].Trim().TrimEnd('%'),NumberStyles.Float,CultureInfo.InvariantCulture,out p)&&!double.IsNaN(p)&&!double.IsInfinity(p)){j.Progress=Math.Max(0,Math.Min(99,p));j.Detail=(Core.IsAudio(j.Profile)?"Audio":j.Resolution+"p")+" · stream "+p.ToString("0")+"% · "+parts[2].Trim()+" · "+parts[3].Trim()+" remaining";}}
+   else if(line.StartsWith("[Merger]")||line.StartsWith("[VideoRemuxer]")||line.StartsWith("[Metadata]")||line.StartsWith("[ExtractAudio]")){j.Status="Finishing";j.Detail=Core.IsAudio(j.Profile)?"Preparing your audio file…":"Combining video and audio without quality loss…";}
+  }
   async Task Start(){
    if(running||updating)return;if(!jobs.Any(x=>x.Status=="Queued")){Status("Add a checked video, or retry a stopped download first.");return;}
    try{CheckTools();}catch(Exception ex){Status(ex.Message);return;}
@@ -251,8 +260,7 @@ namespace ClearFrame {
     args.Add("--");args.Add(j.Url);j.Status="Downloading";j.Detail=(Core.IsAudio(j.Profile)?"Audio":j.Resolution+"p")+" · "+j.Container.ToUpperInvariant();string completedPath=null;
     var r=await Core.Run(Tool("yt-dlp"),args,ct,86400,line=>{
      if(line.StartsWith("CFPATH|")) completedPath=line.Substring(7).Trim();
-     UI(()=>{Log(j,line);if(line.StartsWith("CFP|")){var parts=line.Split('|');double p;if(parts.Length>=4&&double.TryParse(parts[1].Trim().TrimEnd('%'),NumberStyles.Float,CultureInfo.InvariantCulture,out p)){j.Progress=Math.Max(0,Math.Min(99,p));j.Detail=(Core.IsAudio(j.Profile)?"Audio":j.Resolution+"p")+" · stream "+p.ToString("0")+"% · "+parts[2].Trim()+" · "+parts[3].Trim()+" remaining";}}
-      else if(line.StartsWith("[Merger]")||line.StartsWith("[VideoRemuxer]")||line.StartsWith("[Metadata]")||line.StartsWith("[ExtractAudio]")){j.Status="Finishing";j.Detail=Core.IsAudio(j.Profile)?"Preparing your audio file…":"Combining video and audio without quality loss…";}});
+     UI(()=>ApplyDownloadLine(j,line,ct));
     });
     ct.ThrowIfCancellationRequested();if(r.Code!=0)throw new Exception(Core.Friendly(r.Error));
     if(string.IsNullOrWhiteSpace(completedPath)||!File.Exists(completedPath))throw new Exception("The engine did not report a saved video. Open Details to inspect the output.");
@@ -271,8 +279,9 @@ namespace ClearFrame {
   }
   async Task UpdateEngine(){if(running||inspecting||updating)return;updating=true;C<Button>("UpdateButton").IsEnabled=false;C<Button>("InspectButton").IsEnabled=false;C<Button>("StartButton").IsEnabled=false;Status("Checking the official yt-dlp release for an engine update…");try{CheckTools();var r=await Core.Run(Tool("yt-dlp"),new[]{"--ignore-config","--no-plugin-dirs","--update"},CancellationToken.None,180,null);Status(r.Code==0?"Engine check finished. "+r.Output.Trim():Core.Friendly(r.Error));}catch(Exception ex){Status(ex.Message);}finally{updating=false;C<Button>("UpdateButton").IsEnabled=true;C<Button>("InspectButton").IsEnabled=true;C<Button>("StartButton").IsEnabled=true;}}
   void ShowDetails(){var j=Selected();if(j==null){Status("Select a download to see its details.");return;}var box=new TextBox{Text=j.Title+Environment.NewLine+j.Url+Environment.NewLine+j.Folder+Environment.NewLine+Environment.NewLine+(j.Log??j.Detail),IsReadOnly=true,TextWrapping=TextWrapping.Wrap,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,FontFamily=new FontFamily("Consolas"),FontSize=12,Margin=new Thickness(16)};new Window{Title="ClearFrame · Download details",Width=800,Height=560,Owner=w,WindowStartupLocation=WindowStartupLocation.CenterOwner,Content=box}.ShowDialog();}
-  void Save(){if(!preferencesReady)return;try{Directory.CreateDirectory(dataDir);string path=Path.Combine(dataDir,"state.json"),temp=path+".tmp";var data=new Dictionary<string,object>{{"folder",folder},{"jobs",jobs.ToArray()},{"preferences",Preferences()}};File.WriteAllText(temp,Core.Json.Serialize(data),Encoding.UTF8);if(File.Exists(path))File.Replace(temp,path,path+".bak");else File.Move(temp,path);}catch(Exception ex){Status("Could not save download history: "+ex.Message);}}
-  void Load(){string path=Path.Combine(dataDir,"state.json");if(!File.Exists(path))return;try{var data=Core.Json.Deserialize<Dictionary<string,object>>(File.ReadAllText(path));object pref;if(data.TryGetValue("preferences",out pref))preferences=pref as Dictionary<string,object>;string saved=Core.S(data,"folder");if(!string.IsNullOrWhiteSpace(saved))folder=saved;object raw;if(data.TryGetValue("jobs",out raw)){var items=Core.Json.ConvertToType<List<Job>>(raw);foreach(var j in items){if(!Regex.IsMatch(j.Id??"",@"^[a-f0-9]{32}$"))continue;if(j.Status!="Complete"&&j.Status!="Failed"&&j.Status!="Stopped"&&j.Status!="Queued"){j.Status="Stopped";j.Detail="Interrupted earlier. Retry to resume.";}jobs.Add(j);}}}catch{Status("Download history could not be read. The previous file is retained until your next save.");}}
+  void Save(){if(!preferencesReady)return;try{stateStore.Save(new SavedState{Folder=folder,Jobs=jobs.ToList(),Preferences=(Dictionary<string,object>)Preferences()});bool recovered=persistenceError!=null;persistenceError=null;if(recovered)Status("Download history saved.");}catch(Exception ex){persistenceError=ex.Message;Status("Your current queue is still in memory.");}}
+  void Load(){string notice;var state=stateStore.Load(out notice);preferences=state.Preferences;if(!string.IsNullOrWhiteSpace(state.Folder))folder=state.Folder;foreach(var j in state.Jobs){if(!Regex.IsMatch(j.Id??"",@"^[a-f0-9]{32}$"))continue;RestoreJob(j);jobs.Add(j);}if(notice!=null)Status(notice);}
+  static void RestoreJob(Job j){if(j.Status!="Complete"&&j.Status!="Failed"&&j.Status!="Stopped"&&j.Status!="Queued"){j.Status="Stopped";j.Detail="Interrupted earlier. Retry to resume.";}}
   public Window Window {get{return w;}}
   public void Render(string file,int width=1280,int height=880){C<TextBlock>("FolderText").Text="Videos\\ClearFrame";var root=C<Grid>("Root");root.Margin=new Thickness(0);root.Width=width;root.Height=height;root.Measure(new Size(width,height));root.Arrange(new Rect(0,0,width,height));root.UpdateLayout();var image=new RenderTargetBitmap(width,height,96,96,PixelFormats.Pbgra32);var visual=new DrawingVisual();using(var dc=visual.RenderOpen()){dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(9,11,8)),null,new Rect(0,0,width,height));var brush=new VisualBrush(root){AutoLayoutContent=false,ViewboxUnits=BrushMappingMode.Absolute,Viewbox=new Rect(0,0,width,height),Stretch=Stretch.Fill};dc.DrawRectangle(brush,null,new Rect(0,0,width,height));}image.Render(visual);var enc=new PngBitmapEncoder();enc.Frames.Add(BitmapFrame.Create(image));using(var stream=File.Create(file))enc.Save(stream);}
  }

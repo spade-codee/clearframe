@@ -4,6 +4,22 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-02
+
+### Fixed
+
+- Recover missing or unreadable download history from `state.json.bak`. Preserve unreadable files separately before replacing them, and retain the usable backup during recovery.
+- Keep history-save failures visible through later queue status updates; show the full message on hover and clear it after a successful save.
+- Ignore delayed progress and merge messages after cancellation, verification or completion.
+- Exclude the active item from retry-all while its current attempt is finishing.
+- Use the requested quality when identifying duplicates, including Best available and lower-resolution fallback. Single links and batch imports now use the same matching rules; subtitle and strict-quality requests remain distinct.
+
+### Verified
+
+- 68 core checks, 46 offline WPF checks, 12 real-filesystem history checks and subprocess checks passed locally.
+- Recovery checks include corrupt/missing history, both files damaged, backup preservation, failed atomic replacement and temporary-file cleanup.
+- No live network download or full desktop restart test was performed for this patch.
+
 ## [0.3.1] - 2026-10-02
 
 ### Improved
@@ -62,7 +78,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.2
 [0.3.1]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.1
 [0.3.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.0
 [0.2.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.2.0
