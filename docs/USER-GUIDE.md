@@ -1,9 +1,12 @@
-# ClearFrame 0.3 for Windows
+# ClearFrame 0.4 for Windows
 
 A portable desktop downloader for YouTube videos, with source-quality video and sound, from 360p through 8K and uncapped best available.
 
 ## New in this version
 
+- **Choose playlist** previews up to 200 entries so you can select the videos to download.
+- **Pause after current** finishes the current attempt before pausing the remaining queue.
+- Thumbnail cards show duration, estimated source size and clearly labeled download stages.
 - **Video cleanup** opens a local editor for blending or blurring a selected fixed logo region, or cropping an edge. The original is kept and edits are exported to a new MP4. See [VIDEO-CLEANUP.md](VIDEO-CLEANUP.md).
 - Black and charcoal interface with lemon-lime actions, red stop/error accents, dark format selectors and a library sidebar.
 - Batch import of up to 100 individual links, with link validation and duplicate removal.
@@ -24,7 +27,7 @@ Requires 64-bit Windows 10/11 with .NET Framework 4.7.2 or newer. The applicatio
 
 ## Batch links and audio
 
-Choose your format, quality, speed limit and destination first, then select **Add a batch** in the sidebar. Paste up to 100 individual YouTube links, one per line. An invalid link prevents the batch from being added until corrected. Duplicate links within the batch are collapsed; existing non-failed items with matching format, destination and resolution are skipped. Batch titles and actual availability are checked when each job starts. Playlist URLs are not expanded.
+Choose your format, quality, speed limit and destination first, then select **Add a batch** in the sidebar. Paste up to 100 individual YouTube links, one per line. An invalid link prevents the batch from being added until corrected. Duplicate links within the batch are collapsed; existing non-failed items with matching format, destination and requested settings are skipped. Batch titles and actual availability are checked when each job starts. To choose videos from a playlist, use **Choose playlist** instead.
 
 Select **MP3 · audio / best VBR** to convert the best available audio stream into a variable-bitrate MP3. Select **M4A · audio / AAC** to prefer YouTube's original AAC stream; other source audio is converted to AAC when necessary. Video resolution and subtitle controls are disabled for audio downloads. Converting audio does not improve the original recording, and the size shown before download describes the source stream, not a guaranteed final converted-file size.
 
@@ -36,6 +39,16 @@ Select **MP3 · audio / best VBR** to convert the best available audio stream in
 - The **•••** menu contains retry-all, clear completed history, diagnostic details and removal. Clearing history and removing items do not delete media files.
 - **Ctrl+L** focuses the URL field; **Ctrl+F** focuses search; **Ctrl+B** opens batch import.
 - Preferences are remembered on restart. Existing jobs retain the options captured when added.
+- Cards show source duration and estimated source size when known. Estimates are not guarantees of final file size. Progress is per stream; merging and verification have separate labels. Thumbnails are optional and a missing image does not prevent downloading.
+
+## Playlist selection
+
+1. Set your format, quality, fallback, subtitles, bandwidth limit and destination in the main window.
+2. Choose **Choose playlist** from the sidebar, paste a YouTube playlist URL and select **Load playlist**. A video link containing a `list` parameter also works here.
+3. Check individual entries or use **Select available**. No videos are selected automatically. **Clear selection** deselects everything; **Cancel check** stops a lookup.
+4. Select **Add selected**. Your picks are added in playlist order, with duplicate requests skipped. Use **Start queue** when ready; picks join the existing queue if it is already running.
+
+Only the first 200 entries are offered. Repeated video IDs appear once. Entries reported as private, deleted, live or account-required cannot be selected. Playlist metadata may omit details, and a selectable entry can still fail when the downloader checks its actual availability or requested quality. No playlist media is downloaded during the preview. Full-channel import and account-only playlists are not supported.
 
 ## Quality and formats
 
@@ -55,6 +68,7 @@ Select **MP3 · audio / best VBR** to convert the best available audio stream in
 ## Queue and recovery
 
 - The queue runs one video at a time. Progress refers to the current stream, so it may restart when audio begins. Merging and verification appear as separate stages.
+- While the queue runs, check **Pause after current** to finish the active attempt and leave the rest queued. This also pauses after a failed attempt. Uncheck it before completion to continue normally. After pausing, select **Resume queue**; completed items are not repeated. The pause request resets when you start again, and downloads never start automatically after reopening the app.
 - **Stop queue** stops the current worker and leaves remaining jobs queued. Choose the stopped item, **Retry selected**, then **Start queue**. Partial downloads resume when supported by the stream and engine.
 - Queue and history are saved in `%LOCALAPPDATA%\ClearFrame\state.json`. Interrupted jobs are restored as stopped; downloads never start automatically on app launch.
 - If history is missing or unreadable, ClearFrame tries `state.json.bak`. This backup may be one save behind. Unreadable files are copied to names containing `.corrupt-` before new history replaces them; saved media files are unaffected.
@@ -72,11 +86,13 @@ English subtitles are optional separate `.srt` files, including automatic captio
 
 YouTube may reject requests, rate-limit downloads or change its delivery methods. **Update engine** checks the official yt-dlp release. It does not update FFmpeg or Deno. Download success cannot be guaranteed for every video or network.
 
-This version supports individual public videos and Shorts, including batches of individual links, plus cleanup of local videos. It does not import browser cookies, sign into YouTube, download live streams, expand playlists/channels, select alternate audio languages, or bypass account/region restrictions. Only download content you have permission to save.
+This version supports individual public videos and Shorts, batches, selection from the first 200 playlist entries, and cleanup of local videos. It does not import browser cookies, sign into YouTube, download live streams, import full channels, select alternate audio languages, or bypass account/region restrictions. Only download content you have permission to save.
 
 ## Privacy and maintenance
 
 There is no analytics service or application backend. Download requests go directly to YouTube and its media hosts; engine update requests go to GitHub. Titles, links, destinations and diagnostic logs are stored locally. No Google account password is requested. Logs can contain URLs and local paths, so review them before sharing.
+
+Thumbnail cards request images from `i.ytimg.com`, including for up to 200 saved library entries when the app opens. Images are cached in memory for the session. Requests have a timeout, a 2 MiB response limit and at most four active requests; failures leave a format badge. The app does not fetch arbitrary thumbnail URLs supplied by metadata.
 
 The setup script downloads the engine, merger, verifier and JavaScript runtime into `tools`; the public application ZIP does not bundle those executables. Release information and downloaded-asset hashes are in `tools/versions.json`; attribution and upstream license links are in `THIRD-PARTY.md`; archive license files are retained in `tools/licenses`.
 

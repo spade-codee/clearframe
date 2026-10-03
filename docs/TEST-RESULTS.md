@@ -1,4 +1,13 @@
-# Verification — 2 October 2026
+# Verification — 3 October 2026
+
+## Version 0.4.0
+
+- 24 new checks passed for playlist link normalization, invalid links, unavailable/duplicate entries, the 200-entry limit, selection controls, cancellation, queue addition, pause/resume/stop behavior and card metadata.
+- 68 core checks, 36 main-interface checks, 10 editor checks, 12 filesystem recovery checks and subprocess checks passed.
+- Two separate application processes tested restart using isolated state: interrupted work restored as stopped, waiting work remained queued, partial-file bytes survived, and retry retained the same staging ID. No desktop window or network download was used.
+- Visually inspected populated and empty main-window renders at 1280×880 and 1064×762, plus the playlist picker with synthetic entries. Public screenshots show clearly labeled sample jobs and illustrated thumbnails.
+- Automatic approval review rejected the live playlist-and-thumbnail test launch with “blocked by policy.” It was not retried. Live playlist lookup, thumbnail retrieval and full desktop/network resume remain unverified.
+- Video-cleanup behavior is unchanged; prior real-media checks are recorded below.
 
 ## Version 0.3.2
 

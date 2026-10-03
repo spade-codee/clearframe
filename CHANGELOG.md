@@ -4,6 +4,23 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-03
+
+### Added
+
+- Playlist picker: preview the first 200 entries, choose individual videos, select available entries together, and cancel a lookup. Reported private, deleted, account-required and live entries cannot be selected. Actual availability and quality are checked again per download.
+- Pause after current: finish the current download attempt, leave remaining items queued, then resume on demand. Immediate Stop remains available.
+- Download cards with thumbnails, duration, estimated source size, speed/ETA details and explicit per-stream progress labels. Missing thumbnails fall back to format/quality badges.
+- Bounded thumbnail requests to YouTube's image host, with in-memory caching and no arbitrary metadata URL fetching.
+
+### Verified and limitations
+
+- 24 playlist/queue/card checks, 68 core checks, 46 existing offline interface checks, 12 filesystem recovery checks and subprocess checks passed locally.
+- Separate application processes preserved interrupted-job status, queued jobs, partial-file bytes and retry staging identity. These checks do not open desktop windows or resume a live network download.
+- Main interface and playlist picker were rendered and visually inspected, including the main window at its minimum supported size.
+- Automatic approval review blocked the live playlist-and-thumbnail test. Live lookup, thumbnail delivery and full manual desktop restart/resume remain unverified for this release.
+- Playlists beyond the first 200 entries, channel import and account-required playlists are not supported.
+
 ## [0.3.2] - 2026-10-02
 
 ### Fixed
@@ -78,7 +95,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.4.0
 [0.3.2]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.2
 [0.3.1]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.1
 [0.3.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.0

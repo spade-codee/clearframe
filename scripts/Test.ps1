@@ -22,6 +22,14 @@ Invoke-AppCheck @('--render',(Join-Path $artifacts 'interface.png'),'--check-ui'
 Invoke-AppCheck @('--render',(Join-Path $artifacts 'interface-small.png'),'1064','762')
 Invoke-AppCheck @('--render-editor',(Join-Path $artifacts 'editor-empty.png'))
 Invoke-AppCheck @('--check-editor',(Join-Path $artifacts 'editor-controls.txt'))
+Invoke-AppCheck @('--check-v04',(Join-Path $artifacts 'feature-checks.txt'))
+$restartFixture = Join-Path $artifacts ('restart-' + [Guid]::NewGuid().ToString('N'))
+Invoke-AppCheck @('--check-restart',$restartFixture,'write')
+Invoke-AppCheck @('--check-restart',$restartFixture,'read')
+Get-Content (Join-Path $restartFixture 'restart-checks.txt'),(Join-Path $artifacts 'feature-checks.txt')
+Invoke-AppCheck @('--render-library',(Join-Path $artifacts 'library.png'))
+Invoke-AppCheck @('--render-library',(Join-Path $artifacts 'library-small.png'),'1064','762')
+Invoke-AppCheck @('--render-playlist',(Join-Path $artifacts 'playlist.png'))
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 & $compiler /nologo "/out:$output\ProcessFixture.exe" (Join-Path $root 'tests\ProcessFixture.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Process fixture compilation failed.' }

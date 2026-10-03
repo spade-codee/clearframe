@@ -2,7 +2,7 @@
 
 These are proposed features, not implemented promises or scheduled work.
 
-- Select videos from a playlist before adding them to the queue.
+- Browse additional playlist pages beyond the first 200 entries.
 - Download a specified time range with clear keyframe/precision tradeoffs.
 - More subtitle languages and caption-source controls.
 - Schedule a queue to start at a chosen time while the app is running.

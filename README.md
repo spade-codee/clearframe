@@ -7,18 +7,25 @@ A portable Windows desktop app for saving YouTube video and audio to your own li
 
 ![ClearFrame interface](docs/screenshot.png)
 
+Interface preview uses sample library items and illustrated thumbnails.
+
+See the [playlist picker preview](docs/playlist.png), also shown with sample entries.
+
 ## Features
 
 - Video: 360p to 8K, plus the best available source resolution. No upscaling or silent quality downgrade.
 - Formats: MP4, MKV, WebM and MOV; audio-only MP3 and M4A.
 - Batches of up to 100 individual YouTube links, with validation and deduplication.
+- Playlist picker for choosing videos from the first 200 entries, with unavailable-item indicators and cancellation.
+- Pause after the current download, then resume the remaining queue.
+- Thumbnail cards with duration, estimated size, speed/ETA details and clearly labeled per-stream progress.
 - Searchable library, status filters, queue ordering, retry-all, playback and saved preferences.
 - Automatic download-history backup recovery, with damaged-file preservation and visible save errors.
 - Optional subtitles, bandwidth limits and automatic video/audio merging.
 - Verification of saved media streams, resolution and duration.
 - Local-video cleanup: select a fixed logo/text region to blend or blur, or crop away an edge. Compare original and edited frames instantly, then export a separate MP4.
 
-Higher quality and codecs depend on what the source offers. This is an early `0.x` release; complete UI-driven restart/resume testing is still outstanding.
+Higher quality and codecs depend on what the source offers. This is an early `0.x` release; live playlist/thumbnail verification and complete UI-driven restart/resume testing are still outstanding. Automated separate-process restart checks cover queue state and partial-file preservation.
 
 ## Download and run
 

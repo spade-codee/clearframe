@@ -26,10 +26,10 @@ $manifest = Get-Content -LiteralPath (Join-Path $root 'source\app.manifest') -Ra
 $manifest = $manifest -replace '(<assemblyIdentity version=")[^"]+',"`${1}$version.0"
 $generatedManifest = Join-Path $scratch 'app.manifest'
 $manifest | Set-Content -LiteralPath $generatedManifest -Encoding utf8
-$refs = @('System.dll','System.Core.dll','System.Web.Extensions.dll','System.Windows.Forms.dll','System.Drawing.dll','System.Xaml.dll','WPF\WindowsBase.dll','WPF\PresentationCore.dll','WPF\PresentationFramework.dll')
+$refs = @('System.dll','System.Core.dll','System.Net.Http.dll','System.Web.Extensions.dll','System.Windows.Forms.dll','System.Drawing.dll','System.Xaml.dll','WPF\WindowsBase.dll','WPF\PresentationCore.dll','WPF\PresentationFramework.dll')
 $arguments = @('/nologo','/target:winexe','/platform:x64','/optimize+',"/out:$output\ClearFrame.exe","/resource:$root\source\Main.xaml,Main.xaml","/win32manifest:$generatedManifest","/win32icon:$root\source\ClearFrame.ico")
 foreach ($ref in $refs) { $arguments += '/reference:' + (Join-Path $framework $ref) }
-$arguments += @((Join-Path $root 'source\ClearFrame.cs'),(Join-Path $root 'source\UIFeatures.cs'),(Join-Path $root 'source\VideoCleanup.cs'),(Join-Path $root 'source\StateStore.cs'),$assemblyInfo)
+$arguments += @((Join-Path $root 'source\ClearFrame.cs'),(Join-Path $root 'source\UIFeatures.cs'),(Join-Path $root 'source\VideoCleanup.cs'),(Join-Path $root 'source\StateStore.cs'),(Join-Path $root 'source\Playlist.cs'),(Join-Path $root 'source\Thumbnails.cs'),(Join-Path $root 'source\FeatureChecks.cs'),$assemblyInfo)
 & $compiler @arguments
 if ($LASTEXITCODE -ne 0) { throw 'Compilation failed.' }
 Copy-Item -LiteralPath (Join-Path $root 'source\ClearFrame.exe.config') -Destination $output -Force

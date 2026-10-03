@@ -36,9 +36,15 @@ namespace ClearFrame {
   public bool Strict { get; set; }
   public bool Subtitles { get; set; }
   int resolution;
-  public int Resolution { get{return resolution;} set{resolution=value;Changed("Resolution");Changed("Badge");} }
-  public double Duration { get; set; }
-  public long EstimatedBytes { get; set; }
+  public int Resolution { get{return resolution;} set{resolution=value;Changed("Resolution");Changed("Badge");Changed("CardSummary");} }
+  double duration;long estimatedBytes;
+  public double Duration { get{return duration;} set{duration=value;Changed("CardSummary");} }
+  public long EstimatedBytes { get{return estimatedBytes;} set{estimatedBytes=value;Changed("CardSummary");} }
+  BitmapSource thumbnail;
+  [ScriptIgnore] public BitmapSource Thumbnail { get{return thumbnail;} set{thumbnail=value;Changed("Thumbnail");} }
+  [ScriptIgnore] public string CardSummary { get{return (Core.IsAudio(Profile)?"Audio":Badge)+" · "+(Container??"").ToUpperInvariant()+" · "+TimeLabel(Duration)+(EstimatedBytes>0?" · ~"+Core.Size(EstimatedBytes):"");} }
+  [ScriptIgnore] public string ProgressLabel { get{return Status=="Downloading"?Progress.ToString("0",CultureInfo.InvariantCulture)+"% of stream":Status=="Complete"?"Verified download":Status=="Finishing"?"Merging / converting":Status=="Verifying"?"Checking saved file":"";} }
+  public static string TimeLabel(double seconds){if(double.IsNaN(seconds)||double.IsInfinity(seconds)||seconds<=0||seconds>TimeSpan.MaxValue.TotalSeconds)return "Duration unknown";var time=TimeSpan.FromSeconds(seconds);return time.TotalHours>=1?((long)time.TotalHours)+time.ToString(@"\:mm\:ss"):time.ToString(@"mm\:ss");}
   public string FilePath { get; set; }
   public string Log { get; set; }
   public string RateLimit { get; set; }
@@ -47,8 +53,8 @@ namespace ClearFrame {
   string title, detail, status; double progress;
   public string Title { get { return title; } set { title=value; Changed("Title"); } }
   public string Detail { get { return detail; } set { detail=value; Changed("Detail"); } }
-  public string Status { get { return status; } set { status=value; Changed("Status"); } }
-  public double Progress { get { return progress; } set { progress=value; Changed("Progress"); } }
+  public string Status { get { return status; } set { status=value; Changed("Status");Changed("ProgressLabel"); } }
+  public double Progress { get { return progress; } set { progress=value; Changed("Progress");Changed("ProgressLabel"); } }
   public event PropertyChangedEventHandler PropertyChanged;
   void Changed(string name) { if(PropertyChanged!=null) PropertyChanged(this,new PropertyChangedEventArgs(name)); }
  }
@@ -172,13 +178,17 @@ namespace ClearFrame {
   CancellationTokenSource cancellation; CancellationTokenSource inspectionCancellation; Job active;
   readonly StateStore stateStore;
   string persistenceError;
-  public MainWindow(bool testMode) {
+  bool pauseAfterCurrent;
+  readonly bool offline;
+  readonly Thumbnails thumbnails=new Thumbnails();
+  public MainWindow(bool testMode,string testStateDirectory=null) {
+   offline=testMode;
    using(var s=Assembly.GetExecutingAssembly().GetManifestResourceStream("Main.xaml")) w=(Window)XamlReader.Load(s);
    C<TextBlock>("EngineStatus").Text="v"+Assembly.GetExecutingAssembly().GetName().Version.ToString(3)+"  /  WINDOWS x64";
-   dataDir=testMode?Path.Combine(home,"test-state"):Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ClearFrame");
+   dataDir=testMode?(testStateDirectory??Path.Combine(home,"test-state")):Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ClearFrame");
    stateStore=new StateStore(Path.Combine(dataDir,"state.json"));
    folder=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),"ClearFrame");
-   if(!testMode) Load();
+   if(!testMode||testStateDirectory!=null) Load();
    C<TextBlock>("FolderText").Text=folder; C<ListView>("QueueList").ItemsSource=jobs;
    C<Button>("PasteButton").Click+=(s,e)=>{try{C<TextBox>("UrlBox").Text=Clipboard.GetText().Trim();}catch(Exception ex){Status(ex.Message);}};
    C<Button>("InspectButton").Click+=async(s,e)=>{if(inspecting){if(inspectionCancellation!=null)inspectionCancellation.Cancel();return;}await Inspect();};
@@ -190,14 +200,20 @@ namespace ClearFrame {
    C<Button>("FolderButton").Click+=(s,e)=>{using(var d=new Forms.FolderBrowserDialog()){d.Description="Choose where ClearFrame saves videos";d.SelectedPath=folder;if(d.ShowDialog()==Forms.DialogResult.OK){folder=d.SelectedPath;C<TextBlock>("FolderText").Text=folder;Save();}}};
    C<Button>("StartButton").Click+=async(s,e)=>await Start();
    C<Button>("StopButton").Click+=(s,e)=>{if(cancellation!=null){cancellation.Cancel();Status("Stopping. Partial files will be kept for retry.");}};
+   C<CheckBox>("PauseAfterBox").Checked+=(s,e)=>{pauseAfterCurrent=true;Status("The current download will finish, then the queue will pause.");};
+   C<CheckBox>("PauseAfterBox").Unchecked+=(s,e)=>{pauseAfterCurrent=false;if(running)Status("The queue will continue after the current download.");};
    C<Button>("RetryButton").Click+=(s,e)=>{var j=Selected();if(j!=null&&j!=active&&(j.Status=="Failed"||j.Status=="Stopped")){j.Status="Queued";j.Detail="Will recheck availability and resume supported partial downloads.";j.Progress=0;Save();UpdateCount();}else Status("Select a stopped or failed download to retry.");};
    C<Button>("OpenButton").Click+=(s,e)=>{var j=Selected();if(j==null)return;try{if(!string.IsNullOrEmpty(j.FilePath)&&File.Exists(j.FilePath)) Process.Start("explorer.exe","/select,"+Core.Quote(j.FilePath));else if(Directory.Exists(j.Folder)) Process.Start("explorer.exe",Core.Quote(j.Folder));else Status("The destination folder has not been created yet.");}catch(Exception ex){Status(ex.Message);}};
    C<Button>("UpdateButton").Click+=async(s,e)=>await UpdateEngine();
    w.Closing+=(s,e)=> {if(closing)return;if(running||inspecting||updating){e.Cancel=true;Status("Stop the queue and wait for the current check or update before closing.");return;}Save();closing=true;};
    SetupFeatures();
+   jobs.CollectionChanged+=(s,e)=>{if(e.NewItems!=null)foreach(Job job in e.NewItems)LoadThumbnail(job);};
+   foreach(var job in jobs.Take(200))LoadThumbnail(job);
+   w.Closed+=(s,e)=>thumbnails.Stop();
    UpdateCount();
    if(!testMode) {try{CheckTools();}catch(Exception ex){Status(ex.Message);}}
   }
+  async void LoadThumbnail(Job job){if(offline)return;job.Thumbnail=await thumbnails.Get(job.VideoId);}
   T C<T>(string name) where T:class {return (T)w.FindName(name);}
   Job Selected(){return C<ListView>("QueueList").SelectedItem as Job;}
   void Status(string value){var text=C<TextBlock>("StatusText");text.Text=string.IsNullOrEmpty(persistenceError)?value:"History not saved: "+persistenceError+" · "+value;text.ToolTip=text.Text;}
@@ -237,10 +253,11 @@ namespace ClearFrame {
   async Task Start(){
    if(running||updating)return;if(!jobs.Any(x=>x.Status=="Queued")){Status("Add a checked video, or retry a stopped download first.");return;}
    try{CheckTools();}catch(Exception ex){Status(ex.Message);return;}
-   running=true;cancellation=new CancellationTokenSource();C<Button>("StartButton").IsEnabled=false;C<Button>("StopButton").IsEnabled=true;C<Button>("UpdateButton").IsEnabled=false;
-   try{while(!cancellation.IsCancellationRequested){var j=jobs.FirstOrDefault(x=>x.Status=="Queued");if(j==null)break;active=j;await Download(j,cancellation.Token);active=null;Save();UpdateCount();}}
-   finally{active=null;running=false;cancellation.Dispose();cancellation=null;C<Button>("StartButton").IsEnabled=true;C<Button>("StopButton").IsEnabled=false;C<Button>("UpdateButton").IsEnabled=!inspecting;Save();Status(jobs.Any(x=>x.Status=="Failed")?"Queue finished with errors. Select a failed item and open Details.":jobs.Any(x=>x.Status=="Stopped"||x.Status=="Queued")?"Queue stopped. Retry the stopped item to resume it.":"Queue complete. Saved files passed their media checks.");}
+   running=true;pauseAfterCurrent=false;C<CheckBox>("PauseAfterBox").IsChecked=false;C<CheckBox>("PauseAfterBox").IsEnabled=true;cancellation=new CancellationTokenSource();C<Button>("StartButton").IsEnabled=false;C<Button>("StartButton").Content="↓  Start queue";C<Button>("StopButton").IsEnabled=true;C<Button>("UpdateButton").IsEnabled=false;
+   try{await RunQueue(Download,cancellation.Token);}
+   finally{bool paused=pauseAfterCurrent&&!cancellation.IsCancellationRequested&&jobs.Any(x=>x.Status=="Queued");active=null;running=false;cancellation.Dispose();cancellation=null;C<CheckBox>("PauseAfterBox").IsEnabled=false;C<CheckBox>("PauseAfterBox").IsChecked=false;C<Button>("StartButton").IsEnabled=true;C<Button>("StartButton").Content=paused?"↓  Resume queue":"↓  Start queue";C<Button>("StopButton").IsEnabled=false;C<Button>("UpdateButton").IsEnabled=!inspecting;Save();Status(paused?"Queue paused after the current item. Select Resume queue to continue.":jobs.Any(x=>x.Status=="Failed")?"Queue finished with errors. Select a failed item and open Details.":jobs.Any(x=>x.Status=="Stopped"||x.Status=="Queued")?"Queue stopped. Retry the stopped item to resume it.":"Queue complete. Saved files passed their media checks.");}
   }
+  async Task RunQueue(Func<Job,CancellationToken,Task> download,CancellationToken token){while(!token.IsCancellationRequested){var job=jobs.FirstOrDefault(x=>x.Status=="Queued");if(job==null)break;active=job;await download(job,token);active=null;Save();UpdateCount();if(pauseAfterCurrent)break;}}
   async Task Download(Job j,CancellationToken ct){
    try{
     j.Status="Checking";UpdateCount();j.Progress=0;j.Detail="Refreshing source links…";Log(j,"--- "+DateTime.Now.ToString("s")+" ---");
@@ -292,6 +309,11 @@ namespace ClearFrame {
     var app=new Application();app.DispatcherUnhandledException+=(s,e)=>{MessageBox.Show(e.Exception.Message,"ClearFrame");e.Handled=true;};
     if(args.Length>1&&args[0]=="--render-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"tools"),Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-state")).Render(args[1],args.Length>2?args[2]:null);return 0;}
     if(args.Length>1&&args[0]=="--check-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","").CheckOfflineInterface(args[1]);return 0;}
+    if(args.Length>1&&args[0]=="--check-v04"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckV04(args[1]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}
+    if(args.Length>2&&args[0]=="--check-live-playlist"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckLivePlaylist(args[1],args[2]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}
+    if(args.Length>1&&args[0]=="--render-playlist"){var owner=new MainWindow(true);new PlaylistPicker(owner.Window,null,null).RenderDemo(args[1]);return 0;}
+    if(args.Length>2&&args[0]=="--check-restart"){new MainWindow(true,args[1]).CheckRestart(args[2]);return 0;}
+    if(args.Length>1&&args[0]=="--render-library"){var main=new MainWindow(true);main.DemoLibrary();main.Render(args[1],args.Length>3?int.Parse(args[2]):1280,args.Length>3?int.Parse(args[3]):880);return 0;}
     if(args.Length>1&&args[0]=="--render"){var render=new MainWindow(true);if(args.Length>2&&args[2]=="--check-ui")render.CheckOfflineInterface(args[1]+".checks.txt");int width=args.Length>3?int.Parse(args[2]):1280;int height=args.Length>3?int.Parse(args[3]):880;render.Render(args[1],width,height);return 0;}
     bool created;using(var mutex=new Mutex(true,"Local\\ClearFrame.Desktop",out created)){if(!created){MessageBox.Show("ClearFrame is already running.","ClearFrame");return 0;}app.Run(new MainWindow(false).Window);}return 0;
    }catch(Exception ex){if(args.Length>0){File.WriteAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-error.txt"),ex.ToString());return 1;}MessageBox.Show(ex.Message,"ClearFrame could not start");return 1;}
