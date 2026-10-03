@@ -4,6 +4,24 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-03
+
+### Added
+
+- Clip ranges for checked individual links, with seconds, mm:ss and hh:mm:ss input. Full source media is downloaded before precise local re-encoding; batches and playlist picks remain full-length.
+- Clip exports in all seven existing profiles, with duration/resolution/audio verification and unique filenames. Video clips require SDR and even dimensions; clipping is not lossless.
+- Subtitle selection across 15 languages, including regional variants. Preferences and per-job choices survive restart. Clip SRT captions are clamped and shifted onto the new timeline.
+- Library sorting by added date, title, size or output duration. Sorting only changes the view; download order remains unchanged. Queue-order view enables manual reordering again.
+- Per-job added timestamps and final saved sizes, with compatibility for older history files.
+
+### Fixed and verified
+
+- Caption save failures retain verified media and report a warning instead of marking an already saved video as failed.
+- Duplicate checks distinguish clip ranges and subtitle languages.
+- 36 new option/UI checks passed, plus existing offline, filesystem and subprocess suites. Separate app processes retained clip settings, subtitle language, sort preferences and partial-file identity.
+- Nine clip-media checks passed across seven profiles, including a decoded-frame comparison at a non-keyframe start, source preservation and overwrite protection. All 16 video-cleanup media checks also passed.
+- Live YouTube clip download and manual desktop interaction remain unverified. Precise trimming was tested with synthetic local media; it currently downloads the full source first.
+
 ## [0.4.0] - 2026-10-03
 
 ### Added
@@ -95,7 +113,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.5.0
 [0.4.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.4.0
 [0.3.2]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.2
 [0.3.1]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.1

@@ -1,0 +1,31 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows.Controls;
+using System.Windows.Data;
+
+namespace ClearFrame {
+    public partial class MainWindow {
+        public void CheckV05(string report){
+            preferencesReady=false;int count=0;Action<bool,string> check=(ok,name)=>{if(!ok)throw new Exception(name);count++;};Action<Action,string> reject=(action,name)=>{bool failed=false;try{action();}catch{failed=true;}check(failed,name);};
+            check(DownloadOptions.ParseTime("1:02:03.5")==3723.5&&DownloadOptions.ParseTime("90.125")==90.125&&DownloadOptions.ParseTime("02:30")==150,"time input formats");
+            foreach(var value in new[]{"-1","NaN","Infinity","1:60","1:2:90","","1e4","1:2:3:4","0.1234"})reject(()=>DownloadOptions.ParseTime(value),"invalid time "+value);
+            DownloadOptions.ValidateClip(1,3,5);count++;reject(()=>DownloadOptions.ValidateClip(4,3,5),"backwards clip");reject(()=>DownloadOptions.ValidateClip(0,0.5,5),"sub-second clip");reject(()=>DownloadOptions.ValidateClip(1,6,5),"past-end clip");reject(()=>DownloadOptions.ValidateClip(1,3,double.NaN),"unknown source duration");
+            check(DownloadOptions.Language(null)=="en"&&DownloadOptions.LanguagePattern("fr")=="fr(?:-.*)?,-live_chat","language defaults and regional variants");reject(()=>DownloadOptions.LanguagePattern("all,--exec"),"unsafe subtitle selector");
+            var clipped=new Job{Url="https://www.youtube.com/watch?v=abcdefghijk",Profile="mp4",Container="mp4",TargetResolution=1080,Resolution=1080,Strict=true,Subtitles=true,SubtitleLanguage="fr",ClipStart=2,ClipEnd=5,Duration=10,Folder=folder,Status="Queued"};var restored=Core.Json.Deserialize<Job>(Core.Json.Serialize(clipped));check(restored.ClipStart==2&&restored.ClipEnd==5&&restored.SubtitleLanguage=="fr"&&restored.IsClip,"job options roundtrip");
+            var legacy=Core.Json.Deserialize<Job>("{\"Subtitles\":true,\"Profile\":\"mp4\"}");check(!legacy.IsClip&&DownloadOptions.Language(legacy.SubtitleLanguage)=="en","old jobs retain full video and English captions");
+            string captions="1\n00:00:00,000 --> 00:00:01,000\nBefore\n\n2\n00:00:01,000 --> 00:00:03,000\nOverlap start\nSecond line\n\n3\n00:00:04,000 --> 00:00:06,000\nOverlap end\n\n4\n00:00:06,000 --> 00:00:07,000\nAfter\n";
+            string shifted=DownloadOptions.ClipSubtitles(captions,2,5);check(shifted.Contains("00:00:00,000 --> 00:00:01,000")&&shifted.Contains("00:00:02,000 --> 00:00:03,000")&&!shifted.Contains("Before")&&!shifted.Contains("After")&&shifted.Contains("Second line"),"captions clipped clamped and shifted");reject(()=>DownloadOptions.ClipSubtitles("bad captions",2,5),"malformed captions rejected");
+            C<CheckBox>("SubtitleBox").IsChecked=true;C<ComboBox>("SubtitleLanguageBox").SelectedIndex=2;jobs.Add(clipped);check(Duplicate(clipped.Url,"mp4",folder,1080,2,5),"same clip and caption language deduplicate");check(!Duplicate(clipped.Url,"mp4",folder,1080,3,6)&&!Duplicate(clipped.Url,"mp4",folder,1080),"different clip and full source stay distinct");C<ComboBox>("SubtitleLanguageBox").SelectedIndex=0;check(!Duplicate(clipped.Url,"mp4",folder,1080,2,5),"different subtitle language stays distinct");
+            clipStart=2;clipEnd=5;AddPlaylist(new List<PlaylistItem>{new PlaylistItem{Id="lmnopqrstuv",Available=true,Title="Full playlist item"}});check(!jobs.Last().IsClip&&jobs.Last().SubtitleLanguage=="en","playlist picks stay full-length with selected language");ResetClip();jobs.Clear();
+            var a=new Job{Title="Zulu",Status="Queued",AddedUtcTicks=1,EstimatedBytes=100,Duration=10};var b=new Job{Title="Alpha",Status="Queued",AddedUtcTicks=3,EstimatedBytes=300,SavedBytes=50,Duration=50};var c=new Job{Title="Beta",Status="Queued",AddedUtcTicks=2,EstimatedBytes=200,Duration=100,ClipStart=1,ClipEnd=3};jobs.Add(a);jobs.Add(b);jobs.Add(c);
+            Func<Job[]> visible=()=>CollectionViewSource.GetDefaultView(jobs).Cast<Job>().ToArray();
+            C<ComboBox>("SortBox").SelectedIndex=1;check(visible().SequenceEqual(new[]{b,c,a}),"newest sort");C<ComboBox>("SortBox").SelectedIndex=2;check(visible().SequenceEqual(new[]{a,c,b}),"oldest sort");C<ComboBox>("SortBox").SelectedIndex=3;check(visible().SequenceEqual(new[]{b,c,a}),"title sort");C<ComboBox>("SortBox").SelectedIndex=4;check(visible().SequenceEqual(new[]{c,a,b}),"size uses saved bytes when available");C<ComboBox>("SortBox").SelectedIndex=5;check(visible().SequenceEqual(new[]{b,a,c}),"duration uses clip length");
+            check(jobs.SequenceEqual(new[]{a,b,c})&&!C<Button>("UpButton").IsEnabled,"sorting leaves scheduler order intact");C<ListView>("QueueList").SelectedItem=c;MoveSelected(-1);check(jobs.SequenceEqual(new[]{a,b,c}),"reordering blocked outside queue view");C<ComboBox>("SortBox").SelectedIndex=0;check(visible().SequenceEqual(new[]{a,b,c})&&C<Button>("UpButton").IsEnabled,"queue view restores manual order");
+            C<ComboBox>("SortBox").SelectedIndex=3;C<ComboBox>("SubtitleLanguageBox").SelectedIndex=2;var pref=Core.Json.Deserialize<Dictionary<string,object>>(Core.Json.Serialize(Preferences()));check(Core.S(pref,"subtitleLanguage")=="fr"&&Core.N(pref,"sort")==3,"language and sort preferences saved");
+            string area=Path.Combine(Path.GetDirectoryName(report),"captions-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(area);clipped.Folder=area;File.WriteAllText(Path.Combine(area,"source.fr.srt"),captions);string result=SaveCaptions(clipped,area,Path.Combine(area,"source.mp4"),Path.Combine(area,"result.mp4"));check(result.Contains("1 caption")&&File.ReadAllText(Path.Combine(area,"result.fr.srt"))==shifted,"clip caption finalization uses new timeline");File.WriteAllText(Path.Combine(area,"source.fr.srt"),"malformed");result=SaveCaptions(clipped,area,Path.Combine(area,"source.mp4"),Path.Combine(area,"invalid.mp4"));check(result.Contains("warning")&&!File.Exists(Path.Combine(area,"invalid.fr.srt")),"invalid captions cannot publish wrong timings");
+            jobs.Clear();C<ComboBox>("SortBox").SelectedIndex=0;C<ComboBox>("SubtitleLanguageBox").SelectedIndex=0;C<CheckBox>("SubtitleBox").IsChecked=false;File.WriteAllText(report,count+" v0.5 clip, caption and library checks passed.");
+        }
+    }
+}

@@ -1,9 +1,12 @@
-# ClearFrame 0.4 for Windows
+# ClearFrame 0.5 for Windows
 
 A portable desktop downloader for YouTube videos, with source-quality video and sound, from 360p through 8K and uncapped best available.
 
 ## New in this version
 
+- **Clip range** saves a section of a checked individual link after downloading the full source.
+- **Subtitle language** selects one of 15 language families and available regional variants for separate SRT captions.
+- **Library sort** organizes the view by date, title, size or duration without changing the download sequence.
 - **Choose playlist** previews up to 200 entries so you can select the videos to download.
 - **Pause after current** finishes the current attempt before pausing the remaining queue.
 - Thumbnail cards show duration, estimated source size and clearly labeled download stages.
@@ -33,6 +36,8 @@ Select **MP3 · audio / best VBR** to convert the best available audio stream in
 
 ## Library controls
 
+- Use the sort selector beside search for **Queue order**, **Newest added**, **Oldest added**, **Title A–Z**, **Largest size**, or **Longest duration**. Size uses final saved bytes when known and source estimates otherwise. Duration uses the clip length. Older history without dates retains relative order within the unknown-date group.
+- Sorting does not change the download sequence. **↑ / ↓** is enabled only in **Queue order** view.
 - Use the sidebar to view all, active, completed, audio, or failed/stopped items. Search matches titles, links and file formats. Filtering does not restrict which queued jobs **Start queue** will run.
 - Select a queued item and use **↑ / ↓** to change its position among queued jobs.
 - Select a completed item and use **▶** or double-click it to play it in your default media app.
@@ -65,6 +70,16 @@ Only the first 200 entries are offered. Repeated video IDs appear once. Entries 
 - Separate video and audio streams are merged automatically. Size estimates can be unavailable or approximate.
 - Completion requires a readable file containing video and audio, the selected resolution, and a duration consistent with the source. This is a structural check, not a frame-by-frame corruption scan.
 
+## Clip ranges
+
+Check an individual video link, choose **Clip range…**, and enter start/end times as seconds (`90.5`), minutes/seconds (`01:30.5`), or hours/minutes/seconds (`01:02:30`). Up to three decimal places are supported. The range must be at least one second, within the source duration, and within seven days. Choose **Use clip**, then **Add to queue**. **Use full video** or changing the URL resets the range.
+
+Clips download the **full source first**, then re-encode the requested range locally. This needs bandwidth for the complete source and extra processing/storage; it is not a partial network download. Source data stays in staging until verification, then is removed when possible. Cancellation retains source download data for retry and removes the current temporary clip when possible. A crash can leave temporary files in `.clearframe`.
+
+Video clips require SDR and even dimensions. MP4, compatible MP4, MKV and MOV clips use H.264 CRF 18 with AAC; WebM uses VP9 CRF 30 with Opus. MP3 clips use variable-bitrate MP3; M4A uses AAC. Clipping is not lossless, can take time at high resolutions, and can change the source codecs and file size.
+
+Filenames include the selected range, and existing files are not overwritten. Captions are shifted to start at zero; cues outside the range are removed and overlapping cues are shortened. Batch and playlist additions remain full-length even when a clip is selected for the checked link. Queued clips retain their own settings across restart.
+
 ## Queue and recovery
 
 - The queue runs one video at a time. Progress refers to the current stream, so it may restart when audio begins. Merging and verification appear as separate stages.
@@ -73,16 +88,18 @@ Only the first 200 entries are offered. Repeated video IDs appear once. Entries 
 - Queue and history are saved in `%LOCALAPPDATA%\ClearFrame\state.json`. Interrupted jobs are restored as stopped; downloads never start automatically on app launch.
 - If history is missing or unreadable, ClearFrame tries `state.json.bak`. This backup may be one save behind. Unreadable files are copied to names containing `.corrupt-` before new history replaces them; saved media files are unaffected.
 - If history cannot be saved, a **History not saved** message stays at the start of the status bar until a save succeeds. Hover over the status bar to read the full message. Changes remain in memory and may be lost if you close before saving succeeds.
-- Duplicate checks compare the video link, destination, format and requested quality, rather than the resolution eventually downloaded. Requests with different subtitle settings or strict/fallback settings can be added separately. Audio requests ignore the video-resolution preference.
+- Duplicate checks compare the video link, destination, format, requested quality, clip range and subtitle language. Requests with different subtitle or strict/fallback settings can be added separately. Audio requests ignore the video-resolution preference.
 - Partial files stay in `.clearframe` inside your chosen save folder. Unverified merged files are retained with an `.unverified-...` suffix when retried. Failed jobs may require additional disk space because those files are retained.
 - Completed files are moved into your chosen folder. Existing files are never intentionally overwritten; a numbered name is used for collisions.
 - Removing a queue/history item from the **•••** menu keeps downloaded and partial files. You can delete abandoned partial files manually while the queue is stopped.
 - Changing the save folder applies to new jobs; existing jobs retain their original destination.
-- Disk-space checks reserve roughly twice the estimated download size plus working space. When size is unknown, a minimum-space check cannot guarantee sufficient capacity.
+- Disk-space checks require roughly twice the estimated download size plus working space for full videos, or four times for clips and audio conversions. This is a preflight check, not a reservation. When size is unknown, a minimum-space check cannot guarantee sufficient capacity.
 
 ## Subtitles and unavailable videos
 
-English subtitles are optional separate `.srt` files, including automatic captions when available. Their accuracy depends on the source. If YouTube offers none, the video can still finish. A subtitle network error may cause the job to fail; retry without subtitles if needed.
+Enable **Subtitles (.srt)** and select a language before adding a video, batch or playlist selection. English, Spanish, French, German, Portuguese, Arabic, Hindi, Japanese, Korean, Chinese, Italian, Russian, Turkish, Indonesian and Yoruba are supported, including available regional variants. Queued jobs retain their choice; older jobs default to English.
+
+Captions are separate `.srt` files. Manual and automatic captions are requested when available; ClearFrame does not translate them itself or guarantee accuracy. If the requested language is absent, the video can still finish with an unavailable message. A subtitle network error may fail a download. Caption save or retiming errors after media verification retain the saved video and report a warning in Details. Captions are not embedded.
 
 YouTube may reject requests, rate-limit downloads or change its delivery methods. **Update engine** checks the official yt-dlp release. It does not update FFmpeg or Deno. Download success cannot be guaranteed for every video or network.
 

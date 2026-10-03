@@ -41,12 +41,13 @@ namespace ClearFrame {
             if(phase=="write") {
                 if(jobs.Count!=0)throw new Exception("Restart fixture must be empty.");
                 folder=Path.Combine(dataDir,"downloads");string stage=Path.Combine(folder,".clearframe",id);Directory.CreateDirectory(stage);File.WriteAllText(Path.Combine(stage,"source.part"),"partial fixture bytes");
-                jobs.Add(new Job{Id=id,Status="Downloading",Url="https://www.youtube.com/watch?v=abcdefghijk",VideoId="abcdefghijk",Profile="mp4",Container="mp4",TargetResolution=1080,Folder=folder});jobs.Add(new Job{Id="1123456789abcdef0123456789abcdef",Status="Queued",Profile="mp4",Folder=folder});Save();if(persistenceError!=null)throw new Exception(persistenceError);
+                jobs.Add(new Job{Id=id,Status="Downloading",Url="https://www.youtube.com/watch?v=abcdefghijk",VideoId="abcdefghijk",Profile="mp4",Container="mp4",TargetResolution=1080,Folder=folder,ClipStart=1,ClipEnd=3,Duration=60,SubtitleLanguage="fr",Subtitles=true});jobs.Add(new Job{Id="1123456789abcdef0123456789abcdef",Status="Queued",Profile="mp4",Folder=folder});C<ComboBox>("SubtitleLanguageBox").SelectedIndex=2;C<ComboBox>("SortBox").SelectedIndex=3;Save();if(persistenceError!=null)throw new Exception(persistenceError);
             } else if(phase=="read") {
                 if(jobs.Count!=2||jobs[0].Status!="Stopped"||jobs[1].Status!="Queued"||running||active!=null)throw new Exception("Restart state mismatch.");
+                if(jobs[0].ClipStart!=1||jobs[0].ClipEnd!=3||jobs[0].SubtitleLanguage!="fr"||SubtitleLanguage()!="fr"||C<ComboBox>("SortBox").SelectedIndex!=3)throw new Exception("Clip, caption or sort settings lost on restart.");
                 if(File.ReadAllText(Path.Combine(jobs[0].Folder,".clearframe",jobs[0].Id,"source.part"))!="partial fixture bytes")throw new Exception("Partial staging changed across restart.");
                 C<ListView>("QueueList").SelectedItem=jobs[0];C<Button>("RetryButton").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));if(jobs[0].Status!="Queued"||jobs[0].Id!=id)throw new Exception("Retry lost stable staging identity.");
-                File.WriteAllText(Path.Combine(dataDir,"restart-checks.txt"),"PASS: separate app processes restore interrupted jobs stopped, retain queued jobs and partial bytes, and retry with the same staging ID. No desktop window or live download was used.");
+                File.WriteAllText(Path.Combine(dataDir,"restart-checks.txt"),"PASS: separate app processes restore stopped/queued jobs, clip and subtitle settings, sort preferences and partial bytes; retry keeps the same staging ID. No desktop window or live download was used.");
             } else throw new Exception("Unknown restart check phase.");
         }
         static BitmapSource DemoThumbnail(bool warm) {

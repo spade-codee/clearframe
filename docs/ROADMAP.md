@@ -3,8 +3,8 @@
 These are proposed features, not implemented promises or scheduled work.
 
 - Browse additional playlist pages beyond the first 200 entries.
-- Download a specified time range with clear keyframe/precision tradeoffs.
-- More subtitle languages and caption-source controls.
+- Download only the requested time range over the network, with clear keyframe/precision tradeoffs. Current clips download the full source before trimming.
+- Discover available subtitle languages per video, choose caption sources and optionally embed captions.
 - Schedule a queue to start at a chosen time while the app is running.
 - Choose an available audio language and HDR/SDR variant.
 - Improve full interactive coverage of restart, resume, unavailable media and low-disk-space behavior.

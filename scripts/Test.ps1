@@ -23,6 +23,8 @@ Invoke-AppCheck @('--render',(Join-Path $artifacts 'interface-small.png'),'1064'
 Invoke-AppCheck @('--render-editor',(Join-Path $artifacts 'editor-empty.png'))
 Invoke-AppCheck @('--check-editor',(Join-Path $artifacts 'editor-controls.txt'))
 Invoke-AppCheck @('--check-v04',(Join-Path $artifacts 'feature-checks.txt'))
+Invoke-AppCheck @('--check-v05',(Join-Path $artifacts 'feature-v05-checks.txt'))
+Get-Content (Join-Path $artifacts 'feature-v05-checks.txt')
 $restartFixture = Join-Path $artifacts ('restart-' + [Guid]::NewGuid().ToString('N'))
 Invoke-AppCheck @('--check-restart',$restartFixture,'write')
 Invoke-AppCheck @('--check-restart',$restartFixture,'read')
@@ -30,6 +32,7 @@ Get-Content (Join-Path $restartFixture 'restart-checks.txt'),(Join-Path $artifac
 Invoke-AppCheck @('--render-library',(Join-Path $artifacts 'library.png'))
 Invoke-AppCheck @('--render-library',(Join-Path $artifacts 'library-small.png'),'1064','762')
 Invoke-AppCheck @('--render-playlist',(Join-Path $artifacts 'playlist.png'))
+Invoke-AppCheck @('--render-clip',(Join-Path $artifacts 'clip-options.png'))
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'
 & $compiler /nologo "/out:$output\ProcessFixture.exe" (Join-Path $root 'tests\ProcessFixture.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Process fixture compilation failed.' }
@@ -53,4 +56,10 @@ if ($MediaTools) {
     & (Join-Path $output 'CleanupMediaTests.exe') ([IO.Path]::GetFullPath($MediaTools)) (Join-Path $artifacts 'media-fixtures') (Join-Path $artifacts 'cleanup-media-tests.txt')
     if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $artifacts 'cleanup-media-tests.txt'); throw 'Media checks failed.' }
     Get-Content (Join-Path $artifacts 'cleanup-media-tests.txt')
+    $clipArguments = $arguments | ForEach-Object { $_.Replace('CleanupMediaTests','ClipMediaTests') }
+    & $compiler @clipArguments
+    if ($LASTEXITCODE -ne 0) { throw 'Clip media test compilation failed.' }
+    & (Join-Path $output 'ClipMediaTests.exe') ([IO.Path]::GetFullPath($MediaTools)) (Join-Path $artifacts 'clip-fixtures') (Join-Path $artifacts 'clip-media-tests.txt')
+    if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $artifacts 'clip-media-tests.txt'); throw 'Clip media checks failed.' }
+    Get-Content (Join-Path $artifacts 'clip-media-tests.txt')
 }

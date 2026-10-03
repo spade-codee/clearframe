@@ -1,5 +1,15 @@
 # Verification — 3 October 2026
 
+## Version 0.5.0
+
+- 36 new offline checks passed for time parsing, clip bounds, subtitle-language selection, caption retiming, duplicate detection, all six library sort modes, queue-order preservation and settings serialization.
+- 24 playlist/card checks, 68 core checks, 36 main-interface checks, 10 editor checks, 12 filesystem recovery checks and subprocess checks passed.
+- Two separate application processes verified recovery of clip ranges, subtitle language, library sorting and partial download state without a desktop window or live download.
+- Nine local clip-media checks passed using synthetic media and the pinned tools: all seven output profiles, a cut between keyframes, output overwrite protection and unchanged source bytes. The MP4 first-frame comparison had mean absolute pixel error 0.59 against the requested source frame (threshold 8).
+- All 16 existing video-cleanup media checks passed again.
+- Offline WPF renders cover the main window at 1280×880 and 1064×762 and the clip dialog. Screenshots use labeled sample jobs.
+- No live YouTube clip download or full manual desktop interaction was verified. Clips download the complete source and then re-encode locally; the media checks verify that local processing, not the complete network workflow. GitHub CI runs the offline checks; optional FFmpeg media checks run locally.
+
 ## Version 0.4.0
 
 - 24 new checks passed for playlist link normalization, invalid links, unavailable/duplicate entries, the 200-entry limit, selection controls, cancellation, queue addition, pause/resume/stop behavior and card metadata.
@@ -58,7 +68,7 @@ The earlier video-engine results below remain relevant; video quality/format sup
 ## Limits
 
 - Automatic approval review rejected the hidden desktop integration-test launch with “blocked by policy.” A full interactive click-through, real queue restart and UI-driven resume were not verified.
-- The live download test used the engine's short-clip option, not an entire long video. The app downloads complete videos.
+- The original live download test used the engine's short-clip option, not an entire long video. The app downloads complete sources; version 0.5 can trim them locally afterward.
 - 8K selection was tested with metadata fixtures; no live 8K download was performed.
 - Alternate container files were tested with local media; live downloads were tested in MP4.
 - File verification checks stream presence, dimensions and duration, not every decoded frame.

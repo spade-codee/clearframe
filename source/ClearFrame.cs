@@ -35,6 +35,14 @@ namespace ClearFrame {
   public int TargetResolution { get; set; }
   public bool Strict { get; set; }
   public bool Subtitles { get; set; }
+  public string SubtitleLanguage { get; set; }
+  public double ClipStart { get; set; }
+  public double ClipEnd { get; set; }
+  public long AddedUtcTicks { get; set; }
+  public long SavedBytes { get; set; }
+  [ScriptIgnore] public bool IsClip { get{return ClipEnd>0;} }
+  [ScriptIgnore] public double OutputDuration { get{return IsClip?ClipEnd-ClipStart:Duration;} }
+  [ScriptIgnore] public string ClipLabel { get{return IsClip?"Clip "+ClipStart.ToString("0.###",CultureInfo.InvariantCulture)+"–"+ClipEnd.ToString("0.###",CultureInfo.InvariantCulture)+"s":"Full video";} }
   int resolution;
   public int Resolution { get{return resolution;} set{resolution=value;Changed("Resolution");Changed("Badge");Changed("CardSummary");} }
   double duration;long estimatedBytes;
@@ -42,8 +50,8 @@ namespace ClearFrame {
   public long EstimatedBytes { get{return estimatedBytes;} set{estimatedBytes=value;Changed("CardSummary");} }
   BitmapSource thumbnail;
   [ScriptIgnore] public BitmapSource Thumbnail { get{return thumbnail;} set{thumbnail=value;Changed("Thumbnail");} }
-  [ScriptIgnore] public string CardSummary { get{return (Core.IsAudio(Profile)?"Audio":Badge)+" · "+(Container??"").ToUpperInvariant()+" · "+TimeLabel(Duration)+(EstimatedBytes>0?" · ~"+Core.Size(EstimatedBytes):"");} }
-  [ScriptIgnore] public string ProgressLabel { get{return Status=="Downloading"?Progress.ToString("0",CultureInfo.InvariantCulture)+"% of stream":Status=="Complete"?"Verified download":Status=="Finishing"?"Merging / converting":Status=="Verifying"?"Checking saved file":"";} }
+  [ScriptIgnore] public string CardSummary { get{return (Core.IsAudio(Profile)?"Audio":Badge)+" · "+(Container??"").ToUpperInvariant()+" · "+TimeLabel(OutputDuration)+(IsClip?" · "+ClipLabel:"")+(SavedBytes>0?" · "+Core.Size(SavedBytes):EstimatedBytes>0?" · ~"+Core.Size(EstimatedBytes)+(IsClip?" source":""):"");} }
+  [ScriptIgnore] public string ProgressLabel { get{return Status=="Downloading"?Progress.ToString("0",CultureInfo.InvariantCulture)+"% of stream":Status=="Complete"?"Verified download":Status=="Trimming"?"Encoding clip":Status=="Finishing"?"Merging / converting":Status=="Verifying"?"Checking saved file":"";} }
   public static string TimeLabel(double seconds){if(double.IsNaN(seconds)||double.IsInfinity(seconds)||seconds<=0||seconds>TimeSpan.MaxValue.TotalSeconds)return "Duration unknown";var time=TimeSpan.FromSeconds(seconds);return time.TotalHours>=1?((long)time.TotalHours)+time.ToString(@"\:mm\:ss"):time.ToString(@"mm\:ss");}
   public string FilePath { get; set; }
   public string Log { get; set; }
@@ -193,7 +201,7 @@ namespace ClearFrame {
    C<Button>("PasteButton").Click+=(s,e)=>{try{C<TextBox>("UrlBox").Text=Clipboard.GetText().Trim();}catch(Exception ex){Status(ex.Message);}};
    C<Button>("InspectButton").Click+=async(s,e)=>{if(inspecting){if(inspectionCancellation!=null)inspectionCancellation.Cancel();return;}await Inspect();};
    C<TextBox>("UrlBox").KeyDown+=async(s,e)=>{if(e.Key==System.Windows.Input.Key.Enter&&!inspecting) await Inspect();};
-   C<TextBox>("UrlBox").TextChanged+=(s,e)=>{if(preview!=null){preview=null;selection=null;C<Button>("AddButton").IsEnabled=false;C<TextBlock>("PreviewTitle").Text="Check this link before adding it.";C<TextBlock>("PreviewDetail").Text="Your download options are kept for the next video.";}};
+   C<TextBox>("UrlBox").TextChanged+=(s,e)=>{ResetClip();if(preview!=null){preview=null;selection=null;C<Button>("AddButton").IsEnabled=false;C<TextBlock>("PreviewTitle").Text="Check this link before adding it.";C<TextBlock>("PreviewDetail").Text="Your download options are kept for the next video.";}};
    C<ComboBox>("QualityBox").SelectionChanged+=(s,e)=>RefreshPreview(); C<ComboBox>("FormatBox").SelectionChanged+=(s,e)=>RefreshPreview();
    C<CheckBox>("FallbackBox").Checked+=(s,e)=>RefreshPreview();C<CheckBox>("FallbackBox").Unchecked+=(s,e)=>RefreshPreview();
    C<Button>("AddButton").Click+=(s,e)=>Add();
@@ -207,7 +215,7 @@ namespace ClearFrame {
    C<Button>("UpdateButton").Click+=async(s,e)=>await UpdateEngine();
    w.Closing+=(s,e)=> {if(closing)return;if(running||inspecting||updating){e.Cancel=true;Status("Stop the queue and wait for the current check or update before closing.");return;}Save();closing=true;};
    SetupFeatures();
-   jobs.CollectionChanged+=(s,e)=>{if(e.NewItems!=null)foreach(Job job in e.NewItems)LoadThumbnail(job);};
+   jobs.CollectionChanged+=(s,e)=>{if(e.NewItems!=null)foreach(Job job in e.NewItems){if(job.AddedUtcTicks==0)job.AddedUtcTicks=DateTime.UtcNow.Ticks;LoadThumbnail(job);}};
    foreach(var job in jobs.Take(200))LoadThumbnail(job);
    w.Closed+=(s,e)=>thumbnails.Stop();
    UpdateCount();
@@ -234,13 +242,14 @@ namespace ClearFrame {
    catch(Exception ex){C<TextBlock>("PreviewTitle").Text="This video could not be checked.";C<TextBlock>("PreviewDetail").Text=ex.Message;Status(ex.Message);}
    finally{inspecting=false;inspectionCancellation.Dispose();inspectionCancellation=null;C<Button>("InspectButton").Content="Check link  ↗";C<TextBox>("UrlBox").IsReadOnly=false;C<Button>("PasteButton").IsEnabled=true;C<Button>("UpdateButton").IsEnabled=!running;}
   }
-  void RefreshPreview(){if(preview==null)return; C<TextBlock>("PreviewTitle").Text=Core.S(preview,"title");
+  void RefreshPreview(){if(preview==null)return;UpdateFormatControls();C<TextBlock>("PreviewTitle").Text=Core.S(preview,"title");
    try{selection=Core.Select(preview,TargetResolution(),C<CheckBox>("FallbackBox").IsChecked!=true,Profile());double duration=Core.N(preview,"duration");string time=duration>0?TimeSpan.FromSeconds(duration).ToString(@"hh\:mm\:ss"):"Duration unknown"; C<TextBlock>("PreviewDetail").Text=Core.S(preview,"uploader")+"  ·  "+time+"  ·  "+(Core.IsAudio(Profile())?Profile().ToUpperInvariant()+" audio":selection.Resolution+"p / "+selection.Fps+" fps")+"  ·  "+selection.VideoCodec+"  ·  "+(selection.Approximate&&selection.Bytes>0?"~":"")+Core.Size(selection.Bytes)+"  ·  Sound included";C<Button>("AddButton").IsEnabled=true;Status(Core.IsAudio(Profile())?"Audio stream available. Ready to add.":(TargetResolution()==0||selection.Resolution==TargetResolution()?"Source quality available: ":"Lower-resolution fallback: ")+selection.Resolution+"p. Ready to add.");}
    catch(Exception ex){selection=null;C<Button>("AddButton").IsEnabled=false;C<TextBlock>("PreviewDetail").Text=ex.Message;Status(ex.Message);}
   }
   void Add(){if(preview==null||selection==null)return;string id=Core.S(preview,"id");string container=Core.Container(Profile());
-   if(Duplicate(previewUrl,Profile(),folder,TargetResolution())){Status("This video is already in your queue or history with these download settings.");return;}
-   jobs.Add(new Job{Id=Guid.NewGuid().ToString("N"),Url=previewUrl,VideoId=id,Title=Core.S(preview,"title"),Selector=selection.Selector,Container=container,Profile=Profile(),TargetResolution=TargetResolution(),Strict=C<CheckBox>("FallbackBox").IsChecked!=true,Subtitles=!Core.IsAudio(Profile())&&C<CheckBox>("SubtitleBox").IsChecked==true,RateLimit=Rate(),Resolution=selection.Resolution,Duration=Core.N(preview,"duration"),EstimatedBytes=selection.Bytes,Folder=folder,Status="Queued",Detail=(Core.IsAudio(Profile())?"Audio":selection.Resolution+"p")+" · "+container.ToUpperInvariant()+" · "+Core.Size(selection.Bytes),Log="",FilePath=""});Save();UpdateCount();Status("Added. Select Start queue when you're ready.");
+   if(clipEnd>0)try{DownloadOptions.ValidateClip(clipStart,clipEnd,Core.N(preview,"duration"));}catch(Exception ex){Status(ex.Message);return;}
+   if(Duplicate(previewUrl,Profile(),folder,TargetResolution(),clipStart,clipEnd)){Status("This video is already in your queue or history with these download settings.");return;}
+   jobs.Add(new Job{Id=Guid.NewGuid().ToString("N"),Url=previewUrl,VideoId=id,Title=Core.S(preview,"title"),Selector=selection.Selector,Container=container,Profile=Profile(),TargetResolution=TargetResolution(),Strict=C<CheckBox>("FallbackBox").IsChecked!=true,Subtitles=!Core.IsAudio(Profile())&&C<CheckBox>("SubtitleBox").IsChecked==true,SubtitleLanguage=SubtitleLanguage(),ClipStart=clipStart,ClipEnd=clipEnd,RateLimit=Rate(),Resolution=selection.Resolution,Duration=Core.N(preview,"duration"),EstimatedBytes=selection.Bytes,Folder=folder,Status="Queued",Detail=(clipEnd>0?"Clip · Full source downloaded before trimming · ":"")+(Core.IsAudio(Profile())?"Audio":selection.Resolution+"p")+" · "+container.ToUpperInvariant()+" · "+Core.Size(selection.Bytes),Log="",FilePath=""});Save();UpdateCount();Status("Added. Select Start queue when you're ready.");
   }
   void UpdateCount(){RefreshLibrary();}
   void Log(Job j,string line){if(line.Length>4000)line=line.Substring(0,4000);j.Log=(j.Log??"")+line+Environment.NewLine;if(j.Log.Length>50000)j.Log=j.Log.Substring(j.Log.Length-50000);}
@@ -259,21 +268,23 @@ namespace ClearFrame {
   }
   async Task RunQueue(Func<Job,CancellationToken,Task> download,CancellationToken token){while(!token.IsCancellationRequested){var job=jobs.FirstOrDefault(x=>x.Status=="Queued");if(job==null)break;active=job;await download(job,token);active=null;Save();UpdateCount();if(pauseAfterCurrent)break;}}
   async Task Download(Job j,CancellationToken ct){
+   string clipTemporary=null;
    try{
     j.Status="Checking";UpdateCount();j.Progress=0;j.Detail="Refreshing source links…";Log(j,"--- "+DateTime.Now.ToString("s")+" ---");
     Directory.CreateDirectory(j.Folder);string testPath=Path.Combine(j.Folder,".clearframe-write-"+Guid.NewGuid().ToString("N"));File.WriteAllText(testPath,"");File.Delete(testPath);
     var info=await Metadata(Core.Canonical(j.Url),ct);var sel=Core.Select(info,j.TargetResolution,j.Strict,j.Profile??(j.Container=="mp4"?"compatible":"mkv"));
     j.Title=Core.S(info,"title");j.Selector=sel.Selector;j.Resolution=sel.Resolution;j.Duration=Core.N(info,"duration");j.EstimatedBytes=sel.Bytes;
-    var drive=new DriveInfo(Path.GetPathRoot(Path.GetFullPath(j.Folder)));long required=sel.Bytes>0?(long)(sel.Bytes*(Core.IsAudio(j.Profile)?4:2.2))+104857600:536870912;
+    if(j.IsClip)DownloadOptions.ValidateClip(j.ClipStart,j.ClipEnd,j.Duration);if(j.Subtitles)DownloadOptions.Language(j.SubtitleLanguage);
+    var drive=new DriveInfo(Path.GetPathRoot(Path.GetFullPath(j.Folder)));long required=sel.Bytes>0?(long)(sel.Bytes*(j.IsClip||Core.IsAudio(j.Profile)?4:2.2))+104857600:536870912;
     if(drive.IsReady&&drive.AvailableFreeSpace<required)throw new Exception("Not enough free disk space. Allow room for separate streams and the merged video.");
     // Each job has stable private staging to resume safely and avoid partial-file collisions.
     string stage=Path.Combine(j.Folder,".clearframe",j.Id);Directory.CreateDirectory(stage);
     // Never let an interrupted merge masquerade as an already downloaded file on retry.
     foreach(string old in Directory.GetFiles(stage)) if(Regex.IsMatch(Path.GetFileName(old),@" (\d+p|audio)\.(mp4|mkv|webm|mov|mp3|m4a)$")) File.Move(old,old+".unverified-"+DateTime.UtcNow.Ticks);
     var args=Common();args.AddRange(new[]{"--newline","--progress","--progress-delta","0.5","--progress-template","download:CFP|%(progress._percent_str)s|%(progress._speed_str)s|%(progress._eta_str)s","--print","after_move:CFPATH|%(filepath)s","--no-simulate","--continue","--part","--no-overwrites","--abort-on-unavailable-fragments","--fragment-retries","5","--concurrent-fragments",string.IsNullOrEmpty(j.RateLimit)?"3":"1","--windows-filenames","--trim-filenames","150","--embed-metadata","--format",j.Selector,"--paths",stage,"--output","%(title).100B [%(id)s] "+(Core.IsAudio(j.Profile)?"audio":j.Resolution+"p")+".%(ext)s"});
-    if(Core.IsAudio(j.Profile))args.AddRange(new[]{"--extract-audio","--audio-format",j.Container,"--audio-quality","0"});else args.AddRange(new[]{"--merge-output-format",j.Container,"--remux-video",j.Container});
+    if(Core.IsAudio(j.Profile)){if(!j.IsClip)args.AddRange(new[]{"--extract-audio","--audio-format",j.Container,"--audio-quality","0"});}else args.AddRange(new[]{"--merge-output-format",j.Container,"--remux-video",j.Container});
     if(!string.IsNullOrEmpty(j.RateLimit)){if(!new[]{"1M","2M","5M","10M"}.Contains(j.RateLimit))throw new Exception("Invalid saved speed limit.");args.AddRange(new[]{"--limit-rate",j.RateLimit});}
-    if(j.Subtitles)args.AddRange(new[]{"--write-subs","--write-auto-subs","--sub-langs","en.*,-live_chat","--sub-format","srt/vtt/best","--convert-subs","srt"});
+    if(j.Subtitles)args.AddRange(new[]{"--write-subs","--write-auto-subs","--sub-langs",DownloadOptions.LanguagePattern(j.SubtitleLanguage),"--sub-format","srt/vtt/best","--convert-subs","srt"});
     args.Add("--");args.Add(j.Url);j.Status="Downloading";j.Detail=(Core.IsAudio(j.Profile)?"Audio":j.Resolution+"p")+" · "+j.Container.ToUpperInvariant();string completedPath=null;
     var r=await Core.Run(Tool("yt-dlp"),args,ct,86400,line=>{
      if(line.StartsWith("CFPATH|")) completedPath=line.Substring(7).Trim();
@@ -282,17 +293,19 @@ namespace ClearFrame {
     ct.ThrowIfCancellationRequested();if(r.Code!=0)throw new Exception(Core.Friendly(r.Error));
     if(string.IsNullOrWhiteSpace(completedPath)||!File.Exists(completedPath))throw new Exception("The engine did not report a saved video. Open Details to inspect the output.");
     string full=Path.GetFullPath(completedPath);if(!full.StartsWith(Path.GetFullPath(stage)+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase))throw new Exception("The engine returned an unexpected output location.");
-    if(!string.Equals(Path.GetExtension(full),"."+j.Container,StringComparison.OrdinalIgnoreCase))throw new Exception("The saved file has an unexpected extension. It has not been marked complete.");
+    if(!j.IsClip&&!string.Equals(Path.GetExtension(full),"."+j.Container,StringComparison.OrdinalIgnoreCase))throw new Exception("The saved file has an unexpected extension. It has not been marked complete.");
     j.Status="Verifying";j.Progress=99;j.Detail=Core.IsAudio(j.Profile)?"Checking audio and duration…":"Checking resolution, audio and duration…";
     var probe=await Core.Run(Tool("ffprobe"),new[]{"-v","error","-show_streams","-show_format","-of","json",full},ct,60,null);if(probe.Code!=0)throw new Exception("The downloaded file could not be read by the verifier.");Core.ValidateMedia(probe.Output,j.Resolution,j.Duration);
-    ct.ThrowIfCancellationRequested();string target=Path.Combine(j.Folder,Path.GetFileName(full));if(File.Exists(target)){string stem=Path.GetFileNameWithoutExtension(full),ext=Path.GetExtension(full);int i=2;do{target=Path.Combine(j.Folder,stem+" ("+i+++ ")"+ext);}while(File.Exists(target));}
+    string source=full,outputName=Path.GetFileName(full);
+    if(j.IsClip){if(!Core.IsAudio(j.Profile))CleanupCore.ReadInfo(probe.Output);j.Status="Trimming";j.Detail="Encoding the selected range. The full source stays in staging until verification.";clipTemporary=Path.Combine(stage,"clip-"+Guid.NewGuid().ToString("N")+"."+j.Container);var trim=await Core.Run(Tool("ffmpeg"),DownloadOptions.ClipArgs(full,clipTemporary,j),ct,86400,null);if(trim.Code!=0)throw new Exception(Core.Friendly(trim.Error));var clipProbe=await Core.Run(Tool("ffprobe"),new[]{"-v","error","-show_streams","-show_format","-of","json",clipTemporary},ct,60,null);if(clipProbe.Code!=0)throw new Exception("The clip could not be read by the verifier.");DownloadOptions.VerifyClip(clipProbe.Output,j);full=clipTemporary;outputName=Path.GetFileNameWithoutExtension(source)+" [clip "+j.ClipStart.ToString("0.###",CultureInfo.InvariantCulture)+"-"+j.ClipEnd.ToString("0.###",CultureInfo.InvariantCulture)+"s]."+j.Container;}
+    ct.ThrowIfCancellationRequested();string target=Path.Combine(j.Folder,outputName);if(File.Exists(target)){string stem=Path.GetFileNameWithoutExtension(outputName),ext=Path.GetExtension(outputName);int i=2;do{target=Path.Combine(j.Folder,stem+" ("+i+++ ")"+ext);}while(File.Exists(target));}
     File.Move(full,target);j.FilePath=target;
-    foreach(string sub in Directory.GetFiles(stage,"*.srt")){string name=Path.GetFileNameWithoutExtension(full);string suffix=Path.GetFileName(sub);if(suffix.StartsWith(name,StringComparison.OrdinalIgnoreCase))suffix=suffix.Substring(name.Length);else suffix="."+suffix;string dest=Path.Combine(j.Folder,Path.GetFileNameWithoutExtension(target)+suffix);if(!File.Exists(dest))File.Move(sub,dest);}
-    bool missingSubs=j.Subtitles&&!Directory.GetFiles(j.Folder,Path.GetFileNameWithoutExtension(target)+"*.srt").Any();
-    j.Status="Complete";j.Progress=100;j.Detail="Verified "+(Core.IsAudio(j.Profile)?j.Container.ToUpperInvariant()+" audio":j.Resolution+"p + audio")+" · "+Core.Size(new FileInfo(target).Length)+(missingSubs?" · English subtitles unavailable":"");Log(j,"Verified saved file: "+target);
-    if(!Directory.EnumerateFileSystemEntries(stage).Any())Directory.Delete(stage);
+    string captionNotice=SaveCaptions(j,stage,source,target);j.SavedBytes=new FileInfo(target).Length;
+    j.Status="Complete";j.Progress=100;j.Detail="Verified "+(j.IsClip?"clip · ":"")+(Core.IsAudio(j.Profile)?j.Container.ToUpperInvariant()+" audio":j.Resolution+"p + audio")+" · "+Core.Size(j.SavedBytes)+captionNotice;Log(j,"Verified saved file: "+target);
+    try{if(j.IsClip)File.Delete(source);if(!Directory.EnumerateFileSystemEntries(stage).Any())Directory.Delete(stage);}catch(Exception ex){Log(j,"Staging cleanup: "+ex.Message);}
    }catch(OperationCanceledException){j.Status="Stopped";j.Detail="Partial files kept. Select Retry, then Start queue.";Log(j,"Stopped by user.");}
    catch(Exception ex){j.Status="Failed";j.Detail=ex.Message;Log(j,"ERROR: "+ex.Message);}
+   finally{if(clipTemporary!=null&&File.Exists(clipTemporary))try{File.Delete(clipTemporary);}catch{}}
   }
   async Task UpdateEngine(){if(running||inspecting||updating)return;updating=true;C<Button>("UpdateButton").IsEnabled=false;C<Button>("InspectButton").IsEnabled=false;C<Button>("StartButton").IsEnabled=false;Status("Checking the official yt-dlp release for an engine update…");try{CheckTools();var r=await Core.Run(Tool("yt-dlp"),new[]{"--ignore-config","--no-plugin-dirs","--update"},CancellationToken.None,180,null);Status(r.Code==0?"Engine check finished. "+r.Output.Trim():Core.Friendly(r.Error));}catch(Exception ex){Status(ex.Message);}finally{updating=false;C<Button>("UpdateButton").IsEnabled=true;C<Button>("InspectButton").IsEnabled=true;C<Button>("StartButton").IsEnabled=true;}}
   void ShowDetails(){var j=Selected();if(j==null){Status("Select a download to see its details.");return;}var box=new TextBox{Text=j.Title+Environment.NewLine+j.Url+Environment.NewLine+j.Folder+Environment.NewLine+Environment.NewLine+(j.Log??j.Detail),IsReadOnly=true,TextWrapping=TextWrapping.Wrap,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,FontFamily=new FontFamily("Consolas"),FontSize=12,Margin=new Thickness(16)};new Window{Title="ClearFrame · Download details",Width=800,Height=560,Owner=w,WindowStartupLocation=WindowStartupLocation.CenterOwner,Content=box}.ShowDialog();}
@@ -310,6 +323,8 @@ namespace ClearFrame {
     if(args.Length>1&&args[0]=="--render-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"tools"),Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-state")).Render(args[1],args.Length>2?args[2]:null);return 0;}
     if(args.Length>1&&args[0]=="--check-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","").CheckOfflineInterface(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--check-v04"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckV04(args[1]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}
+    if(args.Length>1&&args[0]=="--check-v05"){new MainWindow(true).CheckV05(args[1]);return 0;}
+    if(args.Length>1&&args[0]=="--render-clip"){new MainWindow(true).RenderClipDialog(args[1]);return 0;}
     if(args.Length>2&&args[0]=="--check-live-playlist"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckLivePlaylist(args[1],args[2]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}
     if(args.Length>1&&args[0]=="--render-playlist"){var owner=new MainWindow(true);new PlaylistPicker(owner.Window,null,null).RenderDemo(args[1]);return 0;}
     if(args.Length>2&&args[0]=="--check-restart"){new MainWindow(true,args[1]).CheckRestart(args[2]);return 0;}
