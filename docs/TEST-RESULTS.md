@@ -5,7 +5,7 @@
 - Fourteen playback-default checks passed for fresh and missing preferences, one-time migration of the old default, preservation of other formats and later explicit advanced choices, invalid settings, the persisted migration marker and visible playback guidance.
 - The reported 1080p file was inspected locally: AV1 video, AAC audio, 1920×1080, SDR, 260 seconds, valid MP4 container. This supports a decoder-compatibility diagnosis; an MP4 extension alone does not imply H.264.
 - A separate H.264/yuv420p + AAC copy was exported locally with strict decode-error handling. Its 1920×1080 dimensions, audio and duration were verified, and the original file's SHA-256 remained unchanged. The repair operation is not an automatic conversion of existing library items.
-- Existing offline suites passed. Actual playback in Windows Media Player remains unverified. New defaults affect future additions; existing jobs and media are not silently converted.
+- Existing offline suites passed. The user confirmed that the repaired copy plays correctly in Windows. Full manual application click-through remains unverified. New defaults affect future additions; existing jobs and media are not silently converted.
 
 ## Version 0.6.0
 
