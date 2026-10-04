@@ -4,6 +4,15 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-04
+
+### Fixed
+
+- Default to compatible H.264/AAC MP4 for new downloads. The previous modern MP4 default could save AV1 video that Windows' player cannot decode without additional support, even at 1080p.
+- Migrate the old default format once for existing preferences; retain other saved formats and explicit advanced MP4 choices made after this update. Existing queued jobs and saved media keep their original settings.
+- Label modern MP4 as advanced codecs and explain the Windows playback requirement in the format hint.
+- Fourteen playback-default checks passed alongside the existing offline suites. The reported file was confirmed to contain AV1 video and AAC audio in a valid 1920×1080 MP4. Actual Windows Media Player playback remains unverified.
+
 ## [0.6.0] - 2026-10-04
 
 ### Added
@@ -132,7 +141,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/spade-codee/clearframe/releases/tag/v0.6.1
 [0.6.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.6.0
 [0.5.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.5.0
 [0.4.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.4.0

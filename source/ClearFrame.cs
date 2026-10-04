@@ -331,6 +331,7 @@ namespace ClearFrame {
     if(args.Length>1&&args[0]=="--check-v05"){new MainWindow(true).CheckV05(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--render-audio-languages"){new MainWindow(true).RenderAudioLanguages(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--check-audio-languages"){new MainWindow(true).CheckAudioTracks(args[1]);return 0;}
+    if(args.Length>1&&args[0]=="--check-playback-defaults"){new MainWindow(true).CheckPlaybackDefaults(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--check-schedule"){new MainWindow(true).CheckScheduling(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--render-clip"){new MainWindow(true).RenderClipDialog(args[1]);return 0;}
     if(args.Length>2&&args[0]=="--check-live-playlist"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckLivePlaylist(args[1],args[2]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}

@@ -1,9 +1,10 @@
-# ClearFrame 0.6 for Windows
+# ClearFrame 0.6.1 for Windows
 
 A portable desktop downloader for YouTube videos, with source-quality video and sound, from 360p through 8K and uncapped best available.
 
 ## New in this version
 
+- **Playback fix:** compatible H.264/AAC MP4 is now the default. The old modern-MP4 default migrates once; explicit advanced choices made afterward are remembered. Existing queued jobs and files are not converted automatically.
 - **Windows installer** handles video-tool setup automatically and adds a Start menu shortcut. No PowerShell commands are needed for installation.
 - **Schedule** starts queued downloads at a chosen local time while ClearFrame stays open.
 - **Audio language** lists the checked video's labeled audio tracks and saves your choice with that download.
@@ -75,8 +76,8 @@ Only the first 200 entries are offered. Repeated video IDs appear once. Entries 
 - Choose **360p, 480p, 720p, 1080p, 1440p, 2160p (4K), or 4320p (8K)**. The selected resolution must be present in the source; the app never upscales.
 - **Best source quality** has no resolution cap and selects the highest available resolution compatible with the selected format.
 - Lower-resolution fallback is **off by default**. Enable **Allow a lower resolution** to permit it. The actual resolution is shown before adding the download and again in the queue. Streams are rechecked when each job starts, so availability may change.
-- **MP4 · modern codecs** accepts H.264, AV1, VP9 and HEVC video with AAC audio. This supports higher qualities where YouTube offers newer codecs; your player needs support for the selected codec, which is shown in the preview.
-- **MP4 · compatible H.264** selects H.264 video with AAC audio for broad playback compatibility. Higher resolutions may not be offered in H.264; try modern MP4 or MKV.
+- **MP4 · advanced codecs** accepts H.264, AV1, VP9 and HEVC video with AAC audio. This supports higher qualities where YouTube offers newer codecs; Windows may require additional decoder support for the selected codec, which is shown in the preview. An `.mp4` extension or 1080p resolution alone does not guarantee player compatibility.
+- **MP4 · compatible H.264** is the default and selects H.264 video with AAC audio for broad playback compatibility. Higher resolutions may not be offered in H.264; advanced MP4 or MKV may offer them but need a compatible player.
 - **MKV** allows newer video/audio codecs, preserving the selected source quality without transcoding. Your player must support the codecs in the file.
 - **WebM** selects VP8, VP9 or AV1 video with Opus or Vorbis audio.
 - **MOV** selects H.264 video and AAC audio in a QuickTime container. Its available resolutions depend on H.264 source availability.

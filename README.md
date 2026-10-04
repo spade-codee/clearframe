@@ -29,6 +29,7 @@ The [clip range dialog](docs/clip-options.png) explains the full-source download
 
 - Video: 360p to 8K, plus the best available source resolution. No upscaling or silent quality downgrade.
 - Formats: MP4, MKV, WebM and MOV; audio-only MP3 and M4A.
+- Compatible H.264/AAC MP4 by default for Windows playback. Advanced codecs remain opt-in and may require additional player support.
 - Batches of up to 100 individual YouTube links, with validation and deduplication.
 - Playlist picker for choosing videos from the first 200 entries, with unavailable-item indicators and cancellation.
 - Pause after the current download, then resume the remaining queue.

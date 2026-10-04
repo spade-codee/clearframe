@@ -19,8 +19,8 @@ namespace ClearFrame {
   Brush Brush(string hex){return (Brush)new BrushConverter().ConvertFromString(hex);}
   string Rate(){return Rates[Math.Max(0,C<ComboBox>("SpeedBox").SelectedIndex)];}
   void SetupFeatures(){
-   SetupLibraryOptions();
-   if(preferences!=null){C<ComboBox>("QualityBox").SelectedIndex=Index("quality",8);C<ComboBox>("FormatBox").SelectedIndex=Index("format",7);C<ComboBox>("SpeedBox").SelectedIndex=Index("speed",5);C<CheckBox>("FallbackBox").IsChecked=Core.S(preferences,"fallback")=="True";C<CheckBox>("SubtitleBox").IsChecked=Core.S(preferences,"subtitles")=="True";}
+   SetupLibraryOptions();C<ComboBox>("FormatBox").SelectedIndex=PlaybackDefaults.FormatIndex(preferences);
+   if(preferences!=null){C<ComboBox>("QualityBox").SelectedIndex=Index("quality",8);C<ComboBox>("SpeedBox").SelectedIndex=Index("speed",5);C<CheckBox>("FallbackBox").IsChecked=Core.S(preferences,"fallback")=="True";C<CheckBox>("SubtitleBox").IsChecked=Core.S(preferences,"subtitles")=="True";}
    preferencesReady=true;
    foreach(string name in new[]{"QualityBox","FormatBox","SpeedBox"}) C<ComboBox>(name).SelectionChanged+=(s,e)=>{UpdateFormatControls();Save();};
    C<CheckBox>("FallbackBox").Checked+=(s,e)=>Save();C<CheckBox>("FallbackBox").Unchecked+=(s,e)=>Save();C<CheckBox>("SubtitleBox").Checked+=(s,e)=>Save();C<CheckBox>("SubtitleBox").Unchecked+=(s,e)=>Save();
@@ -43,9 +43,9 @@ namespace ClearFrame {
    UpdateFormatControls();SetFilter("all");
   }
   int Index(string key,int max){int i=(int)Core.N(preferences,key);return i>=0&&i<max?i:0;}
-  object Preferences(){return new Dictionary<string,object>{{"quality",C<ComboBox>("QualityBox").SelectedIndex},{"format",C<ComboBox>("FormatBox").SelectedIndex},{"speed",C<ComboBox>("SpeedBox").SelectedIndex},{"fallback",C<CheckBox>("FallbackBox").IsChecked==true},{"subtitles",C<CheckBox>("SubtitleBox").IsChecked==true},{"subtitleLanguage",SubtitleLanguage()},{"sort",C<ComboBox>("SortBox").SelectedIndex}};}
+  object Preferences(){return new Dictionary<string,object>{{"playbackDefaultsVersion",1},{"quality",C<ComboBox>("QualityBox").SelectedIndex},{"format",C<ComboBox>("FormatBox").SelectedIndex},{"speed",C<ComboBox>("SpeedBox").SelectedIndex},{"fallback",C<CheckBox>("FallbackBox").IsChecked==true},{"subtitles",C<CheckBox>("SubtitleBox").IsChecked==true},{"subtitleLanguage",SubtitleLanguage()},{"sort",C<ComboBox>("SortBox").SelectedIndex}};}
   void UpdateFormatControls(){bool audio=Core.IsAudio(Profile());C<ComboBox>("QualityBox").IsEnabled=!audio;C<CheckBox>("FallbackBox").IsEnabled=!audio;C<CheckBox>("SubtitleBox").IsEnabled=!audio;C<ComboBox>("SubtitleLanguageBox").IsEnabled=!audio;
-   C<TextBlock>("FormatHint").Text=Profile()=="mp3"?"Audio only · Best-quality variable-bitrate MP3. Converting cannot add detail missing from the source.":Profile()=="m4a"?"Audio only · Prefers the original AAC stream. Other audio is converted to AAC if needed.":Profile()=="compatible"||Profile()=="mov"?"H.264 + AAC for broad compatibility. Higher resolutions may need modern MP4, MKV or WebM.":"Keeps the original picture and sound. Your player must support the source codec.";
+   C<TextBlock>("FormatHint").Text=Profile()=="mp3"?"Audio only · Best-quality variable-bitrate MP3. Converting cannot add detail missing from the source.":Profile()=="m4a"?"Audio only · Prefers the original AAC stream. Other audio is converted to AAC if needed.":Profile()=="compatible"||Profile()=="mov"?"H.264 + AAC for broad compatibility. Higher resolutions may need modern MP4, MKV or WebM.":"Advanced codecs such as AV1 may not play in Windows. Choose MP4 · compatible H.264 for broad playback support.";
    if(clipEnd>0)C<TextBlock>("FormatHint").Text="Clip selected · Downloads the full source, then re-encodes your range. SDR video only.";
   }
   void SetFilter(string filter){libraryFilter=filter;string[] names={"AllNav","ActiveNav","CompleteNav","AudioNav","FailedNav"};string[] keys={"all","active","complete","audio","failed"};string[] titles={"All downloads","In progress","Completed","Audio library","Needs attention"};for(int i=0;i<keys.Length;i++){C<Button>(names[i]).Background=Brush(keys[i]==filter?"#D6F64A":"#10130D");C<Button>(names[i]).Foreground=Brush(keys[i]==filter?"#111609":"#D4DDC6");if(keys[i]==filter)C<TextBlock>("LibraryTitle").Text=titles[i];}UpdateCount();}

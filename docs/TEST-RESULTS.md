@@ -1,5 +1,12 @@
 # Verification — 4 October 2026
 
+## Version 0.6.1
+
+- Fourteen playback-default checks passed for fresh and missing preferences, one-time migration of the old default, preservation of other formats and later explicit advanced choices, invalid settings, the persisted migration marker and visible playback guidance.
+- The reported 1080p file was inspected locally: AV1 video, AAC audio, 1920×1080, SDR, 260 seconds, valid MP4 container. This supports a decoder-compatibility diagnosis; an MP4 extension alone does not imply H.264.
+- A separate H.264/yuv420p + AAC copy was exported locally with strict decode-error handling. Its 1920×1080 dimensions, audio and duration were verified, and the original file's SHA-256 remained unchanged. The repair operation is not an automatic conversion of existing library items.
+- Existing offline suites passed. Actual playback in Windows Media Player remains unverified. New defaults affect future additions; existing jobs and media are not silently converted.
+
 ## Version 0.6.0
 
 - Ten installer checks cover refusing updates while the application's mutex is held, two unattended installation passes in an isolated workspace directory, application version and Windows uninstall registration, execution of all four installed tools, retained FFmpeg license, installed-app core checks and uninstall that preserves an untracked user file. The test downloads the real pinned upstream tools. It refuses to run if this account already has an installed ClearFrame.

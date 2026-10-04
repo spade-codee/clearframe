@@ -13,7 +13,7 @@ Use Windows 10 (version 1809 or later) or Windows 11 on a 64-bit Intel/AMD PC, w
 
 1. Copy the video's YouTube link and paste it into ClearFrame.
 2. Choose **Check link**.
-3. Select your quality and file format. **MP4 · compatible H.264** is a useful choice for broad player support when the source offers it.
+3. Select your quality and file format. **MP4 · compatible H.264** is the default for broad player support when the source offers it.
 4. Choose **Add to queue**, then **Start queue**.
 5. When it says **Complete**, use **Show file** to find your download.
 
@@ -26,6 +26,7 @@ Only download content you have permission to save. Quality depends on the origin
 - **Missing .NET Framework:** install Windows updates, then try setup again.
 - **Missing video tool after installation:** close ClearFrame and rerun setup to repair it.
 - **A video fails:** select it and open **••• > Download details**. Some videos, qualities or network conditions are unsupported.
+- **Windows cannot play a saved MP4:** it may use an advanced codec such as AV1. Update ClearFrame, choose **MP4 · compatible H.264**, and download again. Changing the filename extension does not convert its codec. Older files and queued jobs keep their original format.
 
 ## Update or remove
 
