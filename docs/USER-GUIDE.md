@@ -6,6 +6,7 @@ A portable desktop downloader for YouTube videos, with source-quality video and 
 
 - **Windows installer** handles video-tool setup automatically and adds a Start menu shortcut. No PowerShell commands are needed for installation.
 - **Schedule** starts queued downloads at a chosen local time while ClearFrame stays open.
+- **Audio language** lists the checked video's labeled audio tracks and saves your choice with that download.
 - **Clip range** saves a section of a checked individual link after downloading the full source.
 - **Subtitle language** selects one of 15 language families and available regional variants for separate SRT captions.
 - **Library sort** organizes the view by date, title, size or duration without changing the download sequence.
@@ -39,6 +40,14 @@ Close ClearFrame before running a newer installer. Setup preserves history and d
 Choose your format, quality, speed limit and destination first, then select **Add a batch** in the sidebar. Paste up to 100 individual YouTube links, one per line. An invalid link prevents the batch from being added until corrected. Duplicate links within the batch are collapsed; existing non-failed items with matching format, destination and requested settings are skipped. Batch titles and actual availability are checked when each job starts. To choose videos from a playlist, use **Choose playlist** instead.
 
 Select **MP3 · audio / best VBR** to convert the best available audio stream into a variable-bitrate MP3. Select **M4A · audio / AAC** to prefer YouTube's original AAC stream; other source audio is converted to AAC when necessary. Video resolution and subtitle controls are disabled for audio downloads. Converting audio does not improve the original recording, and the size shown before download describes the source stream, not a guaranteed final converted-file size.
+
+## Audio languages
+
+After **Check link**, choose **Audio language…** to see the languages reported by that video's audio formats. Choose a language or leave **Automatic (source preference)**, then add the video to the queue. This selects an existing recording; it does not translate or generate speech. Audio-description variants are labeled separately when the metadata identifies them.
+
+The chosen language must be available in a codec supported by your format and requested quality. For example, a track available only in Opus may work in MKV but not the MP4 profiles. Incompatible or missing choices fail explicitly rather than substituting another language. Languages are matched exactly, including regional variants. Videos without language labels support Automatic only. MP3/M4A use the chosen language when a separate audio stream is offered.
+
+The choice applies to the checked individual link, including clips, and resets when you change the URL. Batch and playlist additions use Automatic. Each queued job retains its language across restart, and duplicate checks distinguish languages. Cards and saved filenames label explicit language choices. Language availability is checked again when the job starts and may have changed since the preview.
 
 ## Library controls
 
@@ -111,7 +120,7 @@ Captions are separate `.srt` files. Manual and automatic captions are requested 
 
 YouTube may reject requests, rate-limit downloads or change its delivery methods. **Update engine** checks the official yt-dlp release. It does not update FFmpeg or Deno. Download success cannot be guaranteed for every video or network.
 
-This version supports individual public videos and Shorts, batches, selection from the first 200 playlist entries, and cleanup of local videos. It does not import browser cookies, sign into YouTube, download live streams, import full channels, select alternate audio languages, or bypass account/region restrictions. Only download content you have permission to save.
+This version supports individual public videos and Shorts, batches, selection from the first 200 playlist entries, and cleanup of local videos. It does not import browser cookies, sign into YouTube, download live streams, import full channels, or bypass account/region restrictions. Only download content you have permission to save.
 
 ## Privacy and maintenance
 

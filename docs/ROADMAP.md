@@ -6,7 +6,7 @@ These are proposed features, not implemented promises or scheduled work.
 - Download only the requested time range over the network, with clear keyframe/precision tradeoffs. Current clips download the full source before trimming.
 - Discover available subtitle languages per video, choose caption sources and optionally embed captions.
 - Optional Windows background scheduling and wake support. Current schedules require the app to stay open.
-- Choose an available audio language and HDR/SDR variant.
+- Audio-language preferences for batches/playlists, and HDR/SDR selection. Individual checked links already offer available audio languages.
 - Improve full interactive coverage of restart, resume, unavailable media and low-disk-space behavior.
 - Signed Windows releases and a reviewed update flow for all external tools.
 

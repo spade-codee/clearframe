@@ -47,11 +47,11 @@ jobs:
 
           Open the setup file and click Install. Setup downloads and verifies the required video tools automatically. Keep your internet connection on. Then open ClearFrame from the Start menu. No terminal commands or administrator account are needed.
 
-          This release includes scheduled queue starts while the app is open, clip exports, subtitle-language selection, library sorting and video cleanup. Close the app before updating. Your history and saved media are kept.
+          This release includes audio-language selection, scheduled queue starts while the app is open, clip exports, subtitle-language selection, library sorting and video cleanup. Close the app before updating. Your history and saved media are kept.
 
           Advanced users can choose the portable ZIP and run Get-Tools.ps1 in PowerShell 7 instead.
 
-          Requires .NET Framework 4.7.2+. This build is unsigned, so Windows may show an unknown-publisher warning. Download only from this repository. Automated installation checks pass; full manual interaction and live YouTube clip downloads remain unverified.
+          Requires .NET Framework 4.7.2+. This build is unsigned, so Windows may show an unknown-publisher warning. Download only from this repository. Automated installation checks pass; full manual interaction and live YouTube clip/alternate-language downloads remain unverified.
           See CHANGELOG.md and the user guide in the repository for features and known limitations.
           "@
           $notes | Set-Content artifacts/release-notes.md

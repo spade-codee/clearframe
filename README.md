@@ -36,13 +36,14 @@ The [clip range dialog](docs/clip-options.png) explains the full-source download
 - Thumbnail cards with duration, estimated size, speed/ETA details and clearly labeled per-stream progress.
 - Clip ranges for individual videos or audio: download the source, then precisely trim and re-encode the selected range.
 - Subtitle-language selection, clip caption retiming, and library sorting that preserves queue order.
+- Audio-language selection from the checked video's available tracks, with per-download settings and no silent language substitution.
 - Searchable library, status filters, queue ordering, retry-all, playback and saved preferences.
 - Automatic download-history backup recovery, with damaged-file preservation and visible save errors.
 - Optional subtitles, bandwidth limits and automatic video/audio merging.
 - Verification of saved media streams, resolution and duration.
 - Local-video cleanup: select a fixed logo/text region to blend or blur, or crop away an edge. Compare original and edited frames instantly, then export a separate MP4.
 
-Higher quality and codecs depend on what the source offers. This is an early `0.x` release; live playlist/thumbnail and clip-download verification, plus complete UI-driven restart/resume testing, are still outstanding. Automated separate-process restart checks cover queue state, saved options and partial-file preservation. Local synthetic-media tests verify clip exports.
+Higher quality and codecs depend on what the source offers. This is an early `0.x` release; live playlist/thumbnail, alternate audio-language and clip-download verification, plus complete UI-driven restart/resume testing, are still outstanding. Automated separate-process restart checks cover queue state, saved options and partial-file preservation. Local synthetic-media tests verify clip exports.
 
 ## Portable download (advanced)
 

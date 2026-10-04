@@ -12,6 +12,7 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Stable `ClearFrame-Setup.exe` release asset and prominent GitHub download link for sharing with nontechnical users.
 - Scheduled queue starts within seven days using the local clock. Visible scheduled time, change/cancel controls, busy-state deferral and one-time execution. Closing the app or starting manually cancels the schedule; schedules never restart automatically with the app.
 - Simple installation, first-download, repair, upgrade and removal instructions.
+- Audio-language selection from the checked video's metadata, including exact regional and audio-description variants. Per-job language persistence, filename/card labels and language-aware deduplication. Missing or incompatible choices never silently use another language; batches/playlists retain Automatic selection.
 
 ### Fixed and verified
 
@@ -19,7 +20,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Installer refuses to update an open ClearFrame instance and checks Windows architecture, version and .NET Framework requirements.
 - Ten installer checks cover blocking updates while the app is open, installation, reinstallation, tool execution, installed-app core checks, retained licensing and removal without deleting an untracked user file.
 - Fourteen offline scheduling checks cover local/UTC conversion, invalid and daylight-saving times, deferred and one-time starts, cancellation and fresh-session behavior. Existing offline checks pass.
-- No live YouTube clip download or complete manual desktop click-through was verified. Setup requires internet; the application and installer remain unsigned.
+- Nineteen audio-language checks cover stream pairing, codec incompatibility, missing/regional/unlabeled languages, progressive audio, unsafe metadata, persistence and deduplication. Separate app processes restore the selected audio language.
+- No live YouTube clip or alternate-language download, or complete manual desktop click-through, was verified. Setup requires internet; the application and installer remain unsigned.
 
 ## [0.5.0] - 2026-10-03
 
