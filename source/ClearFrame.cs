@@ -214,7 +214,7 @@ namespace ClearFrame {
    C<Button>("OpenButton").Click+=(s,e)=>{var j=Selected();if(j==null)return;try{if(!string.IsNullOrEmpty(j.FilePath)&&File.Exists(j.FilePath)) Process.Start("explorer.exe","/select,"+Core.Quote(j.FilePath));else if(Directory.Exists(j.Folder)) Process.Start("explorer.exe",Core.Quote(j.Folder));else Status("The destination folder has not been created yet.");}catch(Exception ex){Status(ex.Message);}};
    C<Button>("UpdateButton").Click+=async(s,e)=>await UpdateEngine();
    w.Closing+=(s,e)=> {if(closing)return;if(running||inspecting||updating){e.Cancel=true;Status("Stop the queue and wait for the current check or update before closing.");return;}Save();closing=true;};
-   SetupFeatures();
+   SetupFeatures();SetupScheduling();
    jobs.CollectionChanged+=(s,e)=>{if(e.NewItems!=null)foreach(Job job in e.NewItems){if(job.AddedUtcTicks==0)job.AddedUtcTicks=DateTime.UtcNow.Ticks;LoadThumbnail(job);}};
    foreach(var job in jobs.Take(200))LoadThumbnail(job);
    w.Closed+=(s,e)=>thumbnails.Stop();
@@ -229,7 +229,7 @@ namespace ClearFrame {
   string Tool(string name){return Path.Combine(home,"tools",name+".exe");}
   int TargetResolution(){return new[]{1080,1440,2160,4320,0,720,480,360}[C<ComboBox>("QualityBox").SelectedIndex];}
   string Profile(){return new[]{"mp4","compatible","mkv","webm","mov","mp3","m4a"}[C<ComboBox>("FormatBox").SelectedIndex];}
-  void CheckTools(){foreach(string tool in new[]{"yt-dlp","ffmpeg","ffprobe","deno"}) if(!File.Exists(Tool(tool))) throw new Exception("Missing "+tool+". Run Get-Tools.ps1 from the extracted release folder, or scripts/Get-Tools.ps1 from the repository.");}
+  void CheckTools(){foreach(string tool in new[]{"yt-dlp","ffmpeg","ffprobe","deno"}) if(!File.Exists(Tool(tool))) throw new Exception("Missing "+tool+". Run the ClearFrame installer again to repair the video tools. Portable users can run Get-Tools.ps1.");}
   List<string> Common(){return new List<string>{"--ignore-config","--no-plugin-dirs","--cache-dir",Path.Combine(dataDir,"cache"),"--no-playlist","--no-colors","--encoding","utf-8","--socket-timeout","25","--retries","5","--extractor-retries","3","--ffmpeg-location",Path.Combine(home,"tools"),"--js-runtimes","deno:"+Tool("deno")};}
   async Task<Dictionary<string,object>> Metadata(string url,CancellationToken ct){var args=Common();args.AddRange(new[]{"--skip-download","--dump-single-json","--",url});var r=await Core.Run(Tool("yt-dlp"),args,ct,180,null);if(r.Code!=0)throw new Exception(Core.Friendly(r.Error));return Core.Json.Deserialize<Dictionary<string,object>>(r.Output);}
   async Task Inspect(){
@@ -260,6 +260,7 @@ namespace ClearFrame {
    else if(line.StartsWith("[Merger]")||line.StartsWith("[VideoRemuxer]")||line.StartsWith("[Metadata]")||line.StartsWith("[ExtractAudio]")){j.Status="Finishing";j.Detail=Core.IsAudio(j.Profile)?"Preparing your audio file…":"Combining video and audio without quality loss…";}
   }
   async Task Start(){
+   CancelSchedule();
    if(running||updating)return;if(!jobs.Any(x=>x.Status=="Queued")){Status("Add a checked video, or retry a stopped download first.");return;}
    try{CheckTools();}catch(Exception ex){Status(ex.Message);return;}
    running=true;pauseAfterCurrent=false;C<CheckBox>("PauseAfterBox").IsChecked=false;C<CheckBox>("PauseAfterBox").IsEnabled=true;cancellation=new CancellationTokenSource();C<Button>("StartButton").IsEnabled=false;C<Button>("StartButton").Content="↓  Start queue";C<Button>("StopButton").IsEnabled=true;C<Button>("UpdateButton").IsEnabled=false;
@@ -324,6 +325,7 @@ namespace ClearFrame {
     if(args.Length>1&&args[0]=="--check-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","").CheckOfflineInterface(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--check-v04"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckV04(args[1]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}
     if(args.Length>1&&args[0]=="--check-v05"){new MainWindow(true).CheckV05(args[1]);return 0;}
+    if(args.Length>1&&args[0]=="--check-schedule"){new MainWindow(true).CheckScheduling(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--render-clip"){new MainWindow(true).RenderClipDialog(args[1]);return 0;}
     if(args.Length>2&&args[0]=="--check-live-playlist"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckLivePlaylist(args[1],args[2]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}
     if(args.Length>1&&args[0]=="--render-playlist"){var owner=new MainWindow(true);new PlaylistPicker(owner.Window,null,null).RenderDemo(args[1]);return 0;}

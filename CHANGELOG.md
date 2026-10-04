@@ -4,6 +4,23 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-04
+
+### Added
+
+- Windows setup wizard with automatic, SHA-256-verified tool downloads, a Start menu shortcut, optional desktop shortcut and Windows uninstall registration. No terminal commands or administrator account needed.
+- Stable `ClearFrame-Setup.exe` release asset and prominent GitHub download link for sharing with nontechnical users.
+- Scheduled queue starts within seven days using the local clock. Visible scheduled time, change/cancel controls, busy-state deferral and one-time execution. Closing the app or starting manually cancels the schedule; schedules never restart automatically with the app.
+- Simple installation, first-download, repair, upgrade and removal instructions.
+
+### Fixed and verified
+
+- Missing-tool messages now direct installed users to rerun setup for repair.
+- Installer refuses to update an open ClearFrame instance and checks Windows architecture, version and .NET Framework requirements.
+- Ten installer checks cover blocking updates while the app is open, installation, reinstallation, tool execution, installed-app core checks, retained licensing and removal without deleting an untracked user file.
+- Fourteen offline scheduling checks cover local/UTC conversion, invalid and daylight-saving times, deferred and one-time starts, cancellation and fresh-session behavior. Existing offline checks pass.
+- No live YouTube clip download or complete manual desktop click-through was verified. Setup requires internet; the application and installer remain unsigned.
+
 ## [0.5.0] - 2026-10-03
 
 ### Added
@@ -113,7 +130,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.6.0
 [0.5.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.5.0
 [0.4.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.4.0
 [0.3.2]: https://github.com/spade-codee/clearframe/releases/tag/v0.3.2

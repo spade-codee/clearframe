@@ -1,4 +1,12 @@
-# Verification — 3 October 2026
+# Verification — 4 October 2026
+
+## Version 0.6.0
+
+- Ten installer checks cover refusing updates while the application's mutex is held, two unattended installation passes in an isolated workspace directory, application version and Windows uninstall registration, execution of all four installed tools, retained FFmpeg license, installed-app core checks and uninstall that preserves an untracked user file. The test downloads the real pinned upstream tools. It refuses to run if this account already has an installed ClearFrame.
+- Fourteen offline scheduling checks passed: local/UTC conversion, invalid/past/out-of-range dates, daylight-saving gaps and ambiguities, not starting early, waiting while busy, late one-time firing, cancellation, visible scheduled state and no automatic schedule restoration in a new session.
+- Existing 68 core, 36 main-interface, 10 editor, 36 clip/caption/library, 24 playlist/card, 12 filesystem, subprocess and separate-process recovery checks passed.
+- Main-window renders inspected at 1280×880 and 1064×762. No full manual installer or application click-through was performed. The unattended setup tests do not validate every interactive wizard path or Windows security warning.
+- Clip/media processing is unchanged from 0.5.0; its synthetic-media results remain recorded below. Live YouTube clip downloads remain unverified.
 
 ## Version 0.5.0
 

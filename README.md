@@ -1,6 +1,18 @@
 # ClearFrame
 
-A portable Windows desktop app for saving YouTube video and audio to your own library. Built with C# and WPF, with a black interface, lemon-lime accents, and explicit quality controls.
+A Windows desktop app for saving YouTube video and audio to your own library. Built with C# and WPF, with a black interface, lemon-lime accents, and explicit quality controls.
+
+## Download for Windows
+
+**[Download ClearFrame for Windows](https://github.com/spade-codee/clearframe/releases/latest/download/ClearFrame-Setup.exe)**
+
+1. Download and open **ClearFrame-Setup.exe**.
+2. Click **Install** and stay connected to the internet. Setup takes care of the required video tools.
+3. Open **ClearFrame** from the Start menu. Paste a video link, choose **Check link**, **Add to queue**, then **Start queue**.
+
+No commands or administrator account needed. Windows 10/11 on an Intel/AMD 64-bit PC; .NET Framework 4.7.2+ required. The installer is unsigned, so Windows may show an unknown-publisher warning. [Simple setup help](docs/START-HERE.md) · [Release notes and other downloads](https://github.com/spade-codee/clearframe/releases/latest).
+
+**Sharing with a friend? Send this page: [github.com/spade-codee/clearframe](https://github.com/spade-codee/clearframe).** The download link above always points to the latest release.
 
 [![Windows checks](https://github.com/spade-codee/clearframe/actions/workflows/ci.yml/badge.svg)](https://github.com/spade-codee/clearframe/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-D6F64A)](LICENSE)
@@ -20,6 +32,7 @@ The [clip range dialog](docs/clip-options.png) explains the full-source download
 - Batches of up to 100 individual YouTube links, with validation and deduplication.
 - Playlist picker for choosing videos from the first 200 entries, with unavailable-item indicators and cancellation.
 - Pause after the current download, then resume the remaining queue.
+- Schedule the queue to start later while ClearFrame stays open, with a visible scheduled time and cancellation control.
 - Thumbnail cards with duration, estimated size, speed/ETA details and clearly labeled per-stream progress.
 - Clip ranges for individual videos or audio: download the source, then precisely trim and re-encode the selected range.
 - Subtitle-language selection, clip caption retiming, and library sorting that preserves queue order.
@@ -31,14 +44,14 @@ The [clip range dialog](docs/clip-options.png) explains the full-source download
 
 Higher quality and codecs depend on what the source offers. This is an early `0.x` release; live playlist/thumbnail and clip-download verification, plus complete UI-driven restart/resume testing, are still outstanding. Automated separate-process restart checks cover queue state, saved options and partial-file preservation. Local synthetic-media tests verify clip exports.
 
-## Download and run
+## Portable download (advanced)
 
 1. Download the Windows x64 app ZIP from [Releases](https://github.com/spade-codee/clearframe/releases).
 2. Extract the entire ZIP to a writable folder.
 3. In PowerShell 7, open that folder and run `./Get-Tools.ps1`. This downloads yt-dlp, Deno and FFmpeg directly from their upstream GitHub releases and verifies the pinned SHA-256 hashes.
 4. Run `ClearFrame.exe`.
 
-The public release ZIP contains the application and tool installer; the third-party executables are downloaded separately. No administrator access is required. Requires Windows 10/11 x64 and .NET Framework 4.7.2 or newer. The executable is unsigned.
+The portable ZIP requires manual tool setup. For ordinary installation, use the **Windows download** above: it installs the app, downloads the tools automatically and adds a Start menu shortcut. Both options download third-party tools from pinned upstream releases. The installer also registers ClearFrame in Windows Settings > Apps for removal; downloaded media and history are kept.
 
 See the [user guide](docs/USER-GUIDE.md) for quality selection, audio conversion and queue controls. Only save content you have permission to download. ClearFrame is not affiliated with YouTube or Google.
 
@@ -63,13 +76,14 @@ After tool setup, run `./scripts/Test.ps1 -MediaTools ./dist/ClearFrame/tools` f
 
 [`VERSION`](VERSION) is the source of truth for the application version. Builds generate assembly metadata and the Windows manifest from it. [CHANGELOG.md](CHANGELOG.md) records changes. Releases are tagged `vMAJOR.MINOR.PATCH`.
 
-Tag pushes run the Windows build and tests, check that the tag matches `VERSION`, and publish an application ZIP with a SHA-256 checksum. See [the release guide](docs/RELEASING.md).
+Tag pushes run the Windows build and tests, check that the tag matches `VERSION`, and publish a Windows setup executable and portable ZIP with SHA-256 checksums. Installer checks cover installation, reinstallation, tool execution and removal. See [the release guide](docs/RELEASING.md).
 
 ## Project layout
 
 ```text
 source/       C# application, WPF interface, icon and manifest template
 scripts/      Build, test, dependency setup and packaging
+installer/    Windows setup wizard and automatic tool setup
 tests/        Offline subprocess test helpers
 config/       Pinned tool releases and SHA-256 hashes
 docs/         User guide, screenshot, test limits and release process

@@ -2,7 +2,7 @@
 
 The MIT license covers ClearFrame's original application code and documentation. It does not relicense external tools or media.
 
-ClearFrame invokes these tools as separate processes. Their binaries are **not** committed to Git or included in the public application ZIP. `Get-Tools.ps1` downloads them from their upstream release pages onto the user's computer and verifies the hashes in `config/tools.lock.json`.
+ClearFrame invokes these tools as separate processes. Their binaries are **not** committed to Git or embedded in the public setup executable or application ZIP. The Windows installer downloads them directly from upstream onto the user's computer and verifies the hashes in `config/tools.lock.json`. Portable users can run `Get-Tools.ps1` for the same purpose.
 
 | Component | Purpose | Upstream license/source |
 | --- | --- | --- |
@@ -15,3 +15,5 @@ The dependency installer retains license files present in downloaded archives. T
 Repackaging external binaries creates separate license obligations. In particular, the configured FFmpeg build enables GPL components. The application-only release process avoids redistributing that binary. If you distribute an all-in-one package, review and meet the exact build's license and corresponding-source requirements.
 
 GitHub Actions used in CI are pinned to upstream commit hashes and remain subject to their upstream licenses. No downloaded test media is included in this repository.
+
+The Windows setup executable is built with [Inno Setup 6.7.3](https://github.com/jrsoftware/issrc/releases/tag/is-6_7_3), including its archive support. Inno Setup's compiler, installer engine and bundled components retain their [upstream license terms](https://github.com/jrsoftware/issrc/blob/is-6_7_3/license.txt). The compiler download is pinned and SHA-256 verified by `scripts/Get-InstallerCompiler.ps1`.

@@ -1,9 +1,11 @@
-# ClearFrame 0.5 for Windows
+# ClearFrame 0.6 for Windows
 
 A portable desktop downloader for YouTube videos, with source-quality video and sound, from 360p through 8K and uncapped best available.
 
 ## New in this version
 
+- **Windows installer** handles video-tool setup automatically and adds a Start menu shortcut. No PowerShell commands are needed for installation.
+- **Schedule** starts queued downloads at a chosen local time while ClearFrame stays open.
 - **Clip range** saves a section of a checked individual link after downloading the full source.
 - **Subtitle language** selects one of 15 language families and available regional variants for separate SRT captions.
 - **Library sort** organizes the view by date, title, size or duration without changing the download sequence.
@@ -20,13 +22,17 @@ A portable desktop downloader for YouTube videos, with source-quality video and 
 
 ## Start
 
-1. Extract the release ZIP. Run `./Get-Tools.ps1` in PowerShell 7 to download the required tools, then keep the resulting **tools** folder beside **ClearFrame.exe**.
-2. Double-click **ClearFrame.exe**. No administrator access or installation is required.
+1. Download and open **ClearFrame-Setup.exe** from the GitHub release. Click **Install** and stay connected while setup downloads and verifies the video tools.
+2. Open **ClearFrame** from the Start menu. No administrator account or terminal commands are required. An optional desktop shortcut is offered during setup.
 3. Paste a YouTube video or Shorts link and select **Check link**.
 4. Review the resolution, frame rate and estimated size. Choose a save folder, then **Add to queue**.
 5. Add more videos if desired, then select **Start queue**. Select a finished item and **Show file** to find it.
 
-Requires 64-bit Windows 10/11 with .NET Framework 4.7.2 or newer. The application is locally built and unsigned.
+Requires an Intel/AMD 64-bit PC running Windows 10 version 1809 or later, or Windows 11, with .NET Framework 4.7.2 or newer. The application and setup are unsigned; Windows may show an unknown-publisher warning. See [START-HERE.md](https://github.com/spade-codee/clearframe/blob/main/docs/START-HERE.md) for simple setup help.
+
+The portable ZIP remains available for advanced users: extract it, run `./Get-Tools.ps1` in PowerShell 7, then open `ClearFrame.exe`.
+
+Close ClearFrame before running a newer installer. Setup preserves history and downloaded media, but reinstalls the release's pinned tools. Remove the app through **Windows Settings > Apps**; your history and media are kept.
 
 ## Batch links and audio
 
@@ -82,6 +88,8 @@ Filenames include the selected range, and existing files are not overwritten. Ca
 
 ## Queue and recovery
 
+- **Schedule…** accepts a local date/time in `YYYY-MM-DD HH:mm` format, up to seven days ahead. It starts all items queued at that time. The button shows the scheduled time; click it to change or cancel. Manually starting the queue cancels the schedule.
+- Keep ClearFrame open and your PC awake. The app does not wake the PC or run after closing. If the PC wakes late, the schedule runs when the app is ready. An active link check or engine update delays the start until idle. Schedules are deliberately not restored after restarting the app. Daylight-saving times that are skipped or ambiguous are rejected.
 - The queue runs one video at a time. Progress refers to the current stream, so it may restart when audio begins. Merging and verification appear as separate stages.
 - While the queue runs, check **Pause after current** to finish the active attempt and leave the rest queued. This also pauses after a failed attempt. Uncheck it before completion to continue normally. After pausing, select **Resume queue**; completed items are not repeated. The pause request resets when you start again, and downloads never start automatically after reopening the app.
 - **Stop queue** stops the current worker and leaves remaining jobs queued. Choose the stopped item, **Retry selected**, then **Start queue**. Partial downloads resume when supported by the stream and engine.
@@ -111,6 +119,6 @@ There is no analytics service or application backend. Download requests go direc
 
 Thumbnail cards request images from `i.ytimg.com`, including for up to 200 saved library entries when the app opens. Images are cached in memory for the session. Requests have a timeout, a 2 MiB response limit and at most four active requests; failures leave a format badge. The app does not fetch arbitrary thumbnail URLs supplied by metadata.
 
-The setup script downloads the engine, merger, verifier and JavaScript runtime into `tools`; the public application ZIP does not bundle those executables. Release information and downloaded-asset hashes are in `tools/versions.json`; attribution and upstream license links are in `THIRD-PARTY.md`; archive license files are retained in `tools/licenses`.
+The Windows installer downloads the engine, merger, verifier and JavaScript runtime directly from pinned upstream releases into `tools`; the setup executable and portable ZIP do not bundle those third-party executables. The portable setup script does the same job manually. Release information and downloaded-asset hashes are in `tools/versions.json`; attribution and upstream license links are in `THIRD-PARTY.md`; the FFmpeg archive license is retained in `tools/licenses`.
 
 The full C# and XAML source is in `source`. To rebuild with the Windows .NET Framework compiler, run `scripts/Build.ps1` in PowerShell 7. No NuGet packages are required.

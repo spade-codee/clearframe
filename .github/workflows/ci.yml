@@ -23,6 +23,12 @@ jobs:
         run: ./scripts/Test.ps1
       - name: Package application only
         run: ./scripts/Package.ps1
+      - name: Get verified installer compiler
+        run: ./scripts/Get-InstallerCompiler.ps1
+      - name: Build Windows installer
+        run: ./scripts/Build-Installer.ps1
+      - name: Install, reinstall, run tools and uninstall
+        run: ./scripts/Test-Installer.ps1
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

@@ -1,0 +1,11 @@
+Welcome to ClearFrame
+
+Save videos and audio to your PC, with quality up to 8K when the source offers it.
+
+Click Next, then Install. Setup automatically downloads the required video tools from their official GitHub releases and checks their SHA-256 hashes. Keep your internet connection on. Allow roughly 150 MB of downloads and 1.5 GB of free space for setup; saved videos need additional space.
+
+No terminal commands or administrator account are needed. After setup, open ClearFrame from the Start menu, paste a video link, choose Check link, Add to queue, then Start queue.
+
+Installing an update keeps your library settings and downloaded videos. Close ClearFrame before installing. Uninstall from Windows Settings > Apps; your download history and media are kept.
+
+ClearFrame is MIT licensed. yt-dlp, Deno and FFmpeg retain their own licenses; see THIRD-PARTY.md. Download only content you have permission to save.
