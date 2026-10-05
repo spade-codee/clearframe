@@ -325,6 +325,9 @@ namespace ClearFrame {
    try{if(args.Length>0&&args[0]=="--self-test"){Tests.Run(args.Length>1?args[1]:"self-test.txt");return 0;}
     if(args.Length>1&&args[0]=="--verify"){Core.ValidateMedia(File.ReadAllText(args[1]),int.Parse(args[2]),double.Parse(args[3],CultureInfo.InvariantCulture));return 0;}
     var app=new Application();app.DispatcherUnhandledException+=(s,e)=>{MessageBox.Show(e.Exception.Message,"ClearFrame");e.Handled=true;};
+    if(args.Length>1&&args[0]=="--check-vertical"){VerticalClips.Check(args[1]);return 0;}
+    if(args.Length>1&&args[0]=="--render-vertical"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",false,true).Render(args[1],args.Length>2?args[2]:null);return 0;}
+    if(args.Length>1&&args[0]=="--render-converter"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",true).Render(args[1],args.Length>2?args[2]:null);return 0;}
     if(args.Length>1&&args[0]=="--render-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"tools"),Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-state")).Render(args[1],args.Length>2?args[2]:null);return 0;}
     if(args.Length>1&&args[0]=="--check-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","").CheckOfflineInterface(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--check-v04"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckV04(args[1]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Windows.Interop;
 
 namespace ClearFrame {
     public sealed class QueueSchedule {
@@ -28,9 +29,10 @@ namespace ClearFrame {
         void SetupScheduling(){
             C<Button>("ScheduleButton").Click+=(s,e)=>ScheduleDialog();
             scheduleTimer=new DispatcherTimer{Interval=TimeSpan.FromSeconds(1)};
-            scheduleTimer.Tick+=async(s,e)=>{if(schedule.TakeDue(DateTime.UtcNow,running||updating||inspecting)){UpdateScheduleLabel();await Start();}};
+            scheduleTimer.Tick+=async(s,e)=>{if(schedule.TakeDue(DateTime.UtcNow,ScheduleBusy())){UpdateScheduleLabel();await Start();}};
             scheduleTimer.Start();w.Closed+=(s,e)=>{scheduleTimer.Stop();schedule.Cancel();};
         }
+        bool ScheduleBusy(){return running||updating||inspecting||ComponentDispatcher.IsThreadModal;}
         void UpdateScheduleLabel(){var button=C<Button>("ScheduleButton");button.Content=schedule.DueUtc.HasValue?"Scheduled "+schedule.DueUtc.Value.ToLocalTime().ToString("HH:mm"):"Schedule…";button.ToolTip=schedule.DueUtc.HasValue?"Starts "+schedule.DueUtc.Value.ToLocalTime().ToString("f")+". Click to change or cancel.":"Start the queue later while ClearFrame stays open";}
         void CancelSchedule(){schedule.Cancel();UpdateScheduleLabel();}
         void ScheduleDialog(){
@@ -53,6 +55,7 @@ namespace ClearFrame {
             foreach(var input in new[]{"today","2026-10-04 12:00","2026-10-20 14:00","2026-10-04 25:00"}){bool failed=false;try{QueueSchedule.ParseLocal(input,west,now);}catch{failed=true;}check(failed,"invalid schedule rejected");}
             var eastern=TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");foreach(var input in new[]{"2026-03-08 02:30","2026-11-01 01:30"}){bool failed=false;try{QueueSchedule.ParseLocal(input,eastern,new DateTime(2026,1,1));}catch(Exception ex){failed=ex.Message.Contains("clock change");}check(failed,"DST clock changes rejected");}
             schedule.Set(now.AddMinutes(1));check(!schedule.TakeDue(now,false),"not early");check(!schedule.TakeDue(now.AddMinutes(2),true)&&schedule.DueUtc.HasValue,"busy retains pending start");check(schedule.TakeDue(now.AddMinutes(3),false),"late idle start fires");check(!schedule.TakeDue(now.AddMinutes(4),false),"fires only once");schedule.Set(now);CancelSchedule();check(!schedule.TakeDue(now,false)&&C<Button>("ScheduleButton").Content.ToString()=="Schedule…","cancel clears schedule and label");schedule.Set(now);UpdateScheduleLabel();check(C<Button>("ScheduleButton").Content.ToString().StartsWith("Scheduled "),"visible scheduled state");CancelSchedule();check(!new QueueSchedule().DueUtc.HasValue,"new session never restores an automatic start");
+            schedule.Set(now);ComponentDispatcher.PushModal();try{check(ScheduleBusy()&&!schedule.TakeDue(now,ScheduleBusy())&&schedule.DueUtc.HasValue,"modal work defers scheduled downloads");}finally{ComponentDispatcher.PopModal();}check(schedule.TakeDue(now,ScheduleBusy()),"closing dialog allows one pending start");
             File.WriteAllText(report,count+" scheduling checks passed. No network downloads or wall-clock waits were used.");
         }
     }

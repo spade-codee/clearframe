@@ -26,7 +26,7 @@ Only download content you have permission to save. Quality depends on the origin
 - **Missing .NET Framework:** install Windows updates, then try setup again.
 - **Missing video tool after installation:** close ClearFrame and rerun setup to repair it.
 - **A video fails:** select it and open **••• > Download details**. Some videos, qualities or network conditions are unsupported.
-- **Windows cannot play a saved MP4:** it may use an advanced codec such as AV1. Update ClearFrame, choose **MP4 · compatible H.264**, and download again. Changing the filename extension does not convert its codec. Older files and queued jobs keep their original format.
+- **Windows cannot play a saved MP4:** it may use an advanced codec such as AV1. Update ClearFrame, then choose **••• > Convert a video for Windows…**. Open the saved SDR video and export a new MP4; your original is kept. Future downloads default to **MP4 · compatible H.264**. Changing the filename extension does not convert its codec. Older queued jobs keep their original format.
 
 ## Update or remove
 

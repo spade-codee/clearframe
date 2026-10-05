@@ -4,6 +4,18 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-05
+
+### Added
+
+- Local vertical clip workflow for Shorts/TikTok: start/end times, a draggable fixed 9:16 crop, original/edited still previews and 1080×1920 or 720×1280 H.264/AAC MP4 export. Each clip saves separately after codec, dimensions and duration verification. Sources are kept; existing output files are protected. SDR, square-pixel sources only; the crop stays fixed throughout the clip and enlargement cannot add detail.
+- Built-in full-video Windows conversion for existing SDR media, including AV1/Opus sources. Creates a separate H.264/yuv420p and AAC LC MP4 with strict decode-error handling and output verification.
+- Setup help and latest-release links in the More menu, plus a clipping guide included in both installer and portable packages.
+
+### Fixed
+
+- Scheduled queues now defer while a modal editor or dialog is open and fire once the app is ready.
+
 ## [0.6.1] - 2026-10-04
 
 ### Fixed
@@ -141,7 +153,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.7.0
 [0.6.1]: https://github.com/spade-codee/clearframe/releases/tag/v0.6.1
 [0.6.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.6.0
 [0.5.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.5.0

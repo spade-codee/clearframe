@@ -17,6 +17,7 @@ Copy-Item -LiteralPath (Join-Path $root 'scripts\Get-Tools.ps1') -Destination $s
 Copy-Item -LiteralPath (Join-Path $root 'config\tools.lock.json') -Destination $stage
 Copy-Item -LiteralPath (Join-Path $root 'docs\USER-GUIDE.md') -Destination (Join-Path $stage 'USER-GUIDE.md')
 Copy-Item -LiteralPath (Join-Path $root 'docs\VIDEO-CLEANUP.md'),(Join-Path $root 'docs\video-cleanup.png') -Destination $stage
+Copy-Item -LiteralPath (Join-Path $root 'docs\CLIPPING.md'),(Join-Path $root 'docs\vertical-clips.png') -Destination $stage
 @"
 ClearFrame $version — Windows x64
 

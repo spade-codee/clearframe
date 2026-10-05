@@ -47,7 +47,9 @@ jobs:
 
           Open the setup file and click Install. Setup downloads and verifies the required video tools automatically. Keep your internet connection on. Then open ClearFrame from the Start menu. No terminal commands or administrator account are needed.
 
-          This release includes audio-language selection, scheduled queue starts while the app is open, clip exports, subtitle-language selection, library sorting and video cleanup. Close the app before updating. Your history and saved media are kept.
+          New in v0.7.0: local vertical clips for Shorts/TikTok with start/end times, a draggable fixed 9:16 crop and 1080×1920 or 720×1280 H.264/AAC MP4 exports. Choose More > Create a vertical clip. Crops stay fixed through the clip; resizing cannot add detail. SDR square-pixel sources only.
+
+          More > Convert a video for Windows creates a separate compatible MP4 from an existing SDR video. Scheduled queues now wait for modal editors/dialogs to close. Setup help and latest-release links are available inside the app. Close the app before updating. Your history and saved media are kept.
 
           Advanced users can choose the portable ZIP and run Get-Tools.ps1 in PowerShell 7 instead.
 

@@ -1,9 +1,13 @@
-# ClearFrame 0.6.1 for Windows
+# ClearFrame 0.7.0 for Windows
 
 A portable desktop downloader for YouTube videos, with source-quality video and sound, from 360p through 8K and uncapped best available.
 
 ## New in this version
 
+- **Vertical clips:** choose **••• > Create a vertical clip (9:16)…**, open a local video, set start/end times and position the crop. Export a separate 1080×1920 or 720×1280 H.264/AAC MP4. See [CLIPPING.md](CLIPPING.md) for the workflow and resizing limits.
+- **Convert a video for Windows:** the **•••** menu now repairs playback compatibility by exporting an existing SDR video as a new H.264/AAC MP4. The full picture and first audio track are retained; source files are kept.
+- **Scheduling fix:** a scheduled queue waits while a modal editor or dialog is open, then starts when the application is ready.
+- **Setup help and latest release** links are available in the **•••** menu.
 - **Playback fix:** compatible H.264/AAC MP4 is now the default. The old modern-MP4 default migrates once; explicit advanced choices made afterward are remembered. Existing queued jobs and files are not converted automatically.
 - **Windows installer** handles video-tool setup automatically and adds a Start menu shortcut. No PowerShell commands are needed for installation.
 - **Schedule** starts queued downloads at a chosen local time while ClearFrame stays open.

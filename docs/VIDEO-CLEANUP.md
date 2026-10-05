@@ -15,6 +15,8 @@ ClearFrame never adds watermarks to downloads. This editor handles a logo or tex
 - **Blend fixed logo area** uses FFmpeg's delogo interpolation. Select the whole logo, with surrounding pixels available on each side. A border is required; use crop or blur for a logo touching the frame edge. Hidden detail cannot be recovered reliably, and texture/motion can leave visible artifacts.
 - **Blur selected area** obscures the selected rectangle, including regions at a frame edge. It hides detail rather than reconstructing it.
 - **Crop to selected area** keeps the selected rectangle and discards everything outside it. This can remove edge logos at the cost of part of the picture.
+- **Windows-compatible MP4** converts the full SDR video to H.264 with AAC LC audio in a separate file. Region controls are disabled. Open it directly through **••• > Convert a video for Windows…**; choose the source and export a new MP4. Video decoding errors stop export, and the result is checked for codecs, pixel format, dimensions, duration and audio. This mode always re-encodes the first audio track when present.
+- **Vertical clip (9:16)** adds start/end times, a fixed portrait crop and 720×1280 or 1080×1920 output. See [CLIPPING.md](CLIPPING.md).
 
 ## Export and limits
 

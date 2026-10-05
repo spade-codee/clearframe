@@ -1,4 +1,11 @@
-# Verification — 4 October 2026
+# Verification — 5 October 2026
+
+## Version 0.7.0
+
+- Fourteen vertical-clip checks passed for crop geometry, edge positioning, presets, invalid inputs, non-square pixels, clip range and export arguments. Nineteen offline editor checks cover comparison, invalidation, converter controls, vertical crop positioning and mode transitions.
+- Twenty-five synthetic cleanup/conversion/vertical media checks passed with pinned FFmpeg: both portrait export sizes, range duration, H.264/AAC LC, overwrite protection, unchanged source bytes, silent video, AV1/Opus conversion and existing cleanup/preview cases. Nine existing clip-media checks also passed, including precise non-keyframe start verification.
+- Sixteen scheduling checks passed, including modal-dialog deferral and one-time firing after the modal state ends. Existing 68 core, 36 main-interface, 36 clip/caption/library, 24 playlist/card, 19 audio-language, 14 playback-default and 12 filesystem checks, plus subprocess and separate-process recovery checks, passed.
+- Populated vertical and converter layouts were rendered offline and visually inspected. No full manual editor/installer click-through or new live YouTube download was performed. A still-frame preview cannot verify subject framing across an entire moving clip.
 
 ## Version 0.6.1
 

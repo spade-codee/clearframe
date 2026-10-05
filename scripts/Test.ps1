@@ -21,6 +21,10 @@ Invoke-AppCheck @('--self-test',(Join-Path $artifacts 'core-tests.txt'))
 Invoke-AppCheck @('--render',(Join-Path $artifacts 'interface.png'),'--check-ui')
 Invoke-AppCheck @('--render',(Join-Path $artifacts 'interface-small.png'),'1064','762')
 Invoke-AppCheck @('--render-editor',(Join-Path $artifacts 'editor-empty.png'))
+Invoke-AppCheck @('--render-vertical',(Join-Path $artifacts 'vertical-empty.png'))
+Invoke-AppCheck @('--render-converter',(Join-Path $artifacts 'converter-empty.png'))
+Invoke-AppCheck @('--check-vertical',(Join-Path $artifacts 'vertical-checks.txt'))
+Get-Content (Join-Path $artifacts 'vertical-checks.txt')
 Invoke-AppCheck @('--check-editor',(Join-Path $artifacts 'editor-controls.txt'))
 Invoke-AppCheck @('--check-v04',(Join-Path $artifacts 'feature-checks.txt'))
 Invoke-AppCheck @('--check-v05',(Join-Path $artifacts 'feature-v05-checks.txt'))
@@ -63,6 +67,8 @@ if ($MediaTools) {
     & (Join-Path $output 'CleanupMediaTests.exe') ([IO.Path]::GetFullPath($MediaTools)) (Join-Path $artifacts 'media-fixtures') (Join-Path $artifacts 'cleanup-media-tests.txt')
     if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $artifacts 'cleanup-media-tests.txt'); throw 'Media checks failed.' }
     Get-Content (Join-Path $artifacts 'cleanup-media-tests.txt')
+    Invoke-AppCheck @('--render-vertical',(Join-Path $artifacts 'vertical-clips.png'),(Join-Path $artifacts 'media-fixtures/preview.png'))
+    Invoke-AppCheck @('--render-converter',(Join-Path $artifacts 'converter.png'),(Join-Path $artifacts 'media-fixtures/preview.png'))
     $clipArguments = $arguments | ForEach-Object { $_.Replace('CleanupMediaTests','ClipMediaTests') }
     & $compiler @clipArguments
     if ($LASTEXITCODE -ne 0) { throw 'Clip media test compilation failed.' }

@@ -27,9 +27,11 @@ The [clip range dialog](docs/clip-options.png) explains the full-source download
 
 ## Features
 
-- Video: 360p to 8K, plus the best available source resolution. No upscaling or silent quality downgrade.
+- Downloads: 360p to 8K, plus the best available source resolution. No upscaling or silent quality downgrade during downloads.
 - Formats: MP4, MKV, WebM and MOV; audio-only MP3 and M4A.
 - Compatible H.264/AAC MP4 by default for Windows playback. Advanced codecs remain opt-in and may require additional player support.
+- [Vertical clips for Shorts/TikTok](docs/CLIPPING.md): open a local video, choose start/end times, position a fixed 9:16 crop and export at 1080×1920 or 720×1280. Still-frame previews and separate H.264/AAC MP4 outputs; resizing a small crop does not add detail.
+- Built-in **Convert a video for Windows** creates a separate H.264/AAC copy of an existing SDR video, without downloading it again.
 - Batches of up to 100 individual YouTube links, with validation and deduplication.
 - Playlist picker for choosing videos from the first 200 entries, with unavailable-item indicators and cancellation.
 - Pause after the current download, then resume the remaining queue.
