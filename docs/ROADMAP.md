@@ -2,7 +2,7 @@
 
 These are proposed features, not implemented promises or scheduled work.
 
-- Multiple named clip ranges and batch export from one local source. Manual 9:16 cropping and individual exports are available now.
+- Save and reopen clip projects across sessions. Named ranges and sequential batch export are available now within an editor session.
 - A playback timeline, caption styling and subject tracking for vertical clips.
 - Browse additional playlist pages beyond the first 200 entries.
 - Download only the requested time range over the network, with clear keyframe/precision tradeoffs. Current clips download the full source before trimming.

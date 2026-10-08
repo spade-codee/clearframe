@@ -4,6 +4,19 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-08
+
+### Added
+
+- Batches of up to 50 named vertical clips from one local source. Save each range, crop position and output size; edit, remove and reorder clips before exporting.
+- Sequential batch export with per-clip verification, progress, cancellation and retry of unfinished clips. Completed videos are retained and skipped on retry.
+- Filename validation, all-pending preflight collision checks, protection against files created during export, and a source-metadata check before processing. Originals and existing outputs are never overwritten.
+- A warning before closing or replacing the source when saved clips remain unexported. Clip lists are session-only; project persistence is not included.
+
+### Verified
+
+- Twenty batch validation checks, thirty editor-control checks and eight additional synthetic batch-media scenarios, including cancellation, retry, failure cleanup and filename collisions.
+
 ## [0.7.0] - 2026-10-05
 
 ### Added
@@ -153,7 +166,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.8.0
 [0.7.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.7.0
 [0.6.1]: https://github.com/spade-codee/clearframe/releases/tag/v0.6.1
 [0.6.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.6.0

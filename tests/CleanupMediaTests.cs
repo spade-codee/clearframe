@@ -26,6 +26,7 @@ class CleanupMediaTests {
             Directory.CreateDirectory(args[1]); string source = Path.Combine(args[1], "synthetic source.mp4");
             Run(ffmpeg, "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc2=size=320x180:rate=24:duration=1.5,drawbox=x=260:y=20:w=40:h=20:color=white:t=fill", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=1.5", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", source);
             byte[] original = File.ReadAllBytes(source); var info = CleanupCore.ReadInfo(Probe(source));
+            BatchChecks(source,info,args[1],log);
             foreach(int width in new[]{720,1080}){
                 string vertical=Path.Combine(args[1],"vertical-"+width+"-"+Guid.NewGuid().ToString("N")+".mp4");
                 var verticalArgs=VerticalClips.ExportArgs(source,vertical,info,230,10,width,0.25,1.25);Run(ffmpeg,verticalArgs.ToArray());VerticalClips.Verify(Probe(vertical),info,width,0.25,1.25);
@@ -69,5 +70,31 @@ class CleanupMediaTests {
             Run(ffmpeg,"-hide_banner","-loglevel","error","-y","-i",source,"-frames:v","1",Path.Combine(args[1],"preview.png"));
             File.WriteAllText(args[2], log.ToString()); return 0;
         } catch (Exception ex) { log.AppendLine(ex.ToString()); File.WriteAllText(args[2], log.ToString()); return 1; }
+    }
+    static void BatchChecks(string source,VideoInfo info,string root,StringBuilder log){
+        string folder=Path.Combine(root,"batch-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
+        var a=new NamedClip{Name="Opening",Start=0.25,End=1.25,Width=720};var b=new NamedClip{Name="Answer",Start=0,End=1,X=230,Y=20,Width=1080};var clips=new[]{a,b};
+        using(var stop=new CancellationTokenSource()){
+            bool cancelled=false;try{ClipBatch.Export(ffmpeg,ffprobe,source,info,clips,folder,stop.Token,(index,value)=>{if(index==0&&value==100)stop.Cancel();}).GetAwaiter().GetResult();}catch(OperationCanceledException){cancelled=true;}
+            if(!cancelled||a.State!="Complete"||b.State!="Ready"||File.Exists(Path.Combine(folder,"Answer.mp4")))throw new Exception("Batch cancellation did not preserve pending state.");
+        }
+        log.AppendLine("PASS: cancellation after first clip keeps its verified output and leaves remaining clip pending.");
+        byte[] first=File.ReadAllBytes(a.Output);ClipBatch.Export(ffmpeg,ffprobe,source,info,clips,folder,CancellationToken.None,null).GetAwaiter().GetResult();
+        if(!first.SequenceEqual(File.ReadAllBytes(a.Output))||b.State!="Complete")throw new Exception("Retry changed completed output.");
+        VerticalClips.Verify(Probe(a.Output),info,720,0.25,1.25);VerticalClips.Verify(Probe(b.Output),info,1080,0,1);log.AppendLine("PASS: retry skips completed clip and exports independent crop, range and size for pending clip.");
+        var c=new NamedClip{Name="New",Start=0,End=1,Width=720};var collision=new NamedClip{Name="Answer",Start=0,End=1,Width=720};bool failed=false;
+        try{ClipBatch.Export(ffmpeg,ffprobe,source,info,new[]{c,collision},folder,CancellationToken.None,null).GetAwaiter().GetResult();}catch{failed=true;}
+        if(!failed||File.Exists(Path.Combine(folder,"New.mp4")))throw new Exception("Batch preflight wrote a partial batch.");log.AppendLine("PASS: later filename collision prevents every pending export from starting.");
+        using(var stop=new CancellationTokenSource()){
+            bool cancelled=false;try{ClipBatch.Export(ffmpeg,ffprobe,source,info,new[]{c},folder,stop.Token,(index,value)=>stop.Cancel()).GetAwaiter().GetResult();}catch(OperationCanceledException){cancelled=true;}
+            if(!cancelled||c.State!="Cancelled"||Directory.GetFiles(folder,"*.partial-*").Length!=0||File.Exists(Path.Combine(folder,"New.mp4")))throw new Exception("Active clip cancellation left output.");
+        }log.AppendLine("PASS: active clip cancellation leaves no final or temporary output.");
+        failed=false;try{ClipBatch.Export(Path.Combine(folder,"missing-ffmpeg.exe"),ffprobe,source,info,new[]{c},folder,CancellationToken.None,null).GetAwaiter().GetResult();}catch{failed=true;}
+        if(!failed||c.State!="Failed"||Directory.GetFiles(folder,"*.partial-*").Length!=0)throw new Exception("Failed process state or cleanup incorrect.");log.AppendLine("PASS: process failure marks clip failed and removes temporary output.");
+        ClipBatch.Export(ffmpeg,ffprobe,source,info,new[]{c},folder,CancellationToken.None,null).GetAwaiter().GetResult();if(c.State!="Complete")throw new Exception("Failed clip could not retry.");log.AppendLine("PASS: failed clip retries successfully.");
+        var race=new NamedClip{Name="Race",Start=0,End=1,Width=720};string raced=Path.Combine(folder,"Race.mp4");failed=false;
+        try{ClipBatch.Export(ffmpeg,ffprobe,source,info,new[]{race},folder,CancellationToken.None,(index,value)=>{if(value==0&&!File.Exists(raced))File.WriteAllText(raced,"external file");}).GetAwaiter().GetResult();}catch{failed=true;}
+        if(!failed||File.ReadAllText(raced)!="external file"||Directory.GetFiles(folder,"*.partial-*").Length!=0)throw new Exception("Concurrent output collision was not protected.");log.AppendLine("PASS: file created after preflight is never overwritten; temporary export is removed.");
+        var changed=new VideoInfo{Width=640,Height=180,Duration=info.Duration,Audio=info.Audio};failed=false;try{ClipBatch.Export(ffmpeg,ffprobe,source,changed,new[]{race},folder,CancellationToken.None,null).GetAwaiter().GetResult();}catch(Exception ex){failed=ex.Message.Contains("source video changed");}if(!failed)throw new Exception("Changed source accepted.");log.AppendLine("PASS: changed source metadata stops batch before export.");
     }
 }

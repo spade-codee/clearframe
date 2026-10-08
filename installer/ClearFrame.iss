@@ -47,6 +47,7 @@ Source: "..\docs\VIDEO-CLEANUP.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\video-cleanup.png"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\CLIPPING.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\vertical-clips.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\docs\clip-batch.png"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\config\tools.lock.json"; DestDir: "{app}\tools"; DestName: "versions.json"; Flags: ignoreversion
 Source: "{tmp}\yt-dlp.exe"; DestDir: "{app}\tools"; Flags: external ignoreversion; ExternalSize: 40000000
 Source: "{tmp}\deno\deno.exe"; DestDir: "{app}\tools"; Flags: external ignoreversion; ExternalSize: 180000000

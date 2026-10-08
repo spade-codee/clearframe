@@ -47,9 +47,11 @@ jobs:
 
           Open the setup file and click Install. Setup downloads and verifies the required video tools automatically. Keep your internet connection on. Then open ClearFrame from the Start menu. No terminal commands or administrator account are needed.
 
-          New in v0.7.0: local vertical clips for Shorts/TikTok with start/end times, a draggable fixed 9:16 crop and 1080×1920 or 720×1280 H.264/AAC MP4 exports. Choose More > Create a vertical clip. Crops stay fixed through the clip; resizing cannot add detail. SDR square-pixel sources only.
+          New in v0.8.0: batch up to 50 named vertical clips from one local video, each with its own range, crop position and output size. Choose More > Create a vertical clip, Save clip, then New for another. Use Clips to review, edit, reorder and export pending clips to a folder.
 
-          More > Convert a video for Windows creates a separate compatible MP4 from an existing SDR video. Scheduled queues now wait for modal editors/dialogs to close. Setup help and latest-release links are available inside the app. Close the app before updating. Your history and saved media are kept.
+          Exports run sequentially and are verified before saving. Cancellation or failure keeps completed clips; retry skips them. Existing files are never overwritten. Clip lists last only for the editor session, with a warning before discarding unexported clips. Crops remain fixed through each clip; resizing cannot add detail. SDR square-pixel sources only.
+
+          Windows playback conversion, audio-language selection, scheduled downloads and video cleanup remain available. Close the app before updating. Your download history and saved media are kept.
 
           Advanced users can choose the portable ZIP and run Get-Tools.ps1 in PowerShell 7 instead.
 

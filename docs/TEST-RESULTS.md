@@ -1,4 +1,12 @@
-# Verification — 5 October 2026
+# Verification — 8 October 2026
+
+## Version 0.8.0
+
+- Twenty batch-clip validation checks passed for Windows filenames, reserved device names, Unicode names, case-insensitive duplicates, clip ranges and crop bounds, empty/oversized batches, order, and existing file/directory collisions.
+- Thirty offline editor-control checks passed, including saved-setting snapshots, explicit edits, duplicate rejection, list ordering, stale-preview invalidation, busy controls and source-reset behavior.
+- Eight additional real FFmpeg batch scenarios passed: cancellation after the first completed clip, retry with independent crop/range/size, preflight collision prevention, cancellation of an active clip, failed-process cleanup, retry of failed clips, a filename collision introduced after preflight, and changed source metadata. These run alongside the previous 25 cleanup/converter/vertical media cases and nine clip-media cases.
+- Existing core, main-window, playback-default, language, schedule, playlist, filesystem, subprocess and separate-process download-history checks passed. Batch lists are intentionally not persistent and are not covered by download-history restart restoration.
+- Batch review and vertical-editor layouts were rendered offline and visually inspected. Full manual click-through, real file-picker interaction and the discard-confirmation dialog remain unverified; no new live YouTube download was performed.
 
 ## Version 0.7.0
 
