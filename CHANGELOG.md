@@ -4,6 +4,21 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-08
+
+### Added
+
+- Vertical-editor timeline with debounced FFmpeg still previews, clip-start/end markers and Windows-native original-video play/pause. Decoder errors leave the still-preview workflow available. Native playback depends on installed Windows media support and remains manually unverified.
+- Automatic local recovery snapshots after an idle period, including both valid saved clips and unfinished editor fields. Source identity checks, per-session files, atomic writes, previous-snapshot backups, visible save status/errors and a recovery picker.
+- Recovery restoration verifies or relinks the original source, restores raw unfinished inputs and resets exports to Ready without starting them. Manual project files are untouched. Recovery preserves the last completed snapshot, not every keystroke.
+
+### Fixed and verified
+
+- Closing or replacing a source now warns about uncommitted editor fields as well as unsaved project recipes. New/Edit clip actions also warn before replacing an uncommitted draft.
+- Seeking beyond the final frame timestamp now falls back to the last frame in a short preceding interval when available, avoiding an empty end-of-video preview.
+- A source reset cancels pending recovery work so an old source cannot replace a new session's snapshot.
+- Thirteen recovery checks, forty-six offline editor-control checks, eight asynchronous autosave/timeline checks with synthetic video, and separate-process recovery restoration passed alongside the existing suites.
+
 ## [0.9.0] - 2026-10-08
 
 ### Added
@@ -179,7 +194,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.10.0
 [0.9.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.9.0
 [0.8.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.8.0
 [0.7.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.7.0

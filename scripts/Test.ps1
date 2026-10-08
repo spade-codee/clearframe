@@ -33,6 +33,13 @@ $projectRestart = Join-Path $artifacts ('project-restart-'+[Guid]::NewGuid().ToS
 Invoke-AppCheck @('--check-project-restart',$projectRestart,'write')
 Invoke-AppCheck @('--check-project-restart',$projectRestart,'read')
 Get-Content (Join-Path $projectRestart 'project-restart-checks.txt')
+$recoveryFixture = Join-Path $artifacts ('recovery-'+[Guid]::NewGuid().ToString('N'))
+Invoke-AppCheck @('--check-recovery',$recoveryFixture,(Join-Path $artifacts 'recovery-checks.txt'))
+Get-Content (Join-Path $artifacts 'recovery-checks.txt')
+$recoveryRestart = Join-Path $artifacts ('recovery-restart-'+[Guid]::NewGuid().ToString('N'))
+Invoke-AppCheck @('--check-recovery-restart',$recoveryRestart,'write')
+Invoke-AppCheck @('--check-recovery-restart',$recoveryRestart,'read')
+Get-Content (Join-Path $recoveryRestart 'recovery-restart.txt')
 Invoke-AppCheck @('--render-clip-batch',(Join-Path $artifacts 'clip-batch.png'))
 Invoke-AppCheck @('--check-editor',(Join-Path $artifacts 'editor-controls.txt'))
 Invoke-AppCheck @('--check-v04',(Join-Path $artifacts 'feature-checks.txt'))
@@ -76,6 +83,8 @@ if ($MediaTools) {
     & (Join-Path $output 'CleanupMediaTests.exe') ([IO.Path]::GetFullPath($MediaTools)) (Join-Path $artifacts 'media-fixtures') (Join-Path $artifacts 'cleanup-media-tests.txt')
     if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $artifacts 'cleanup-media-tests.txt'); throw 'Media checks failed.' }
     Get-Content (Join-Path $artifacts 'cleanup-media-tests.txt')
+    Invoke-AppCheck @('--check-autosave-ui',([IO.Path]::GetFullPath($MediaTools)),(Join-Path $artifacts ('autosave-ui-'+[Guid]::NewGuid().ToString('N'))),(Join-Path $artifacts 'media-fixtures/synthetic source.mp4'),(Join-Path $artifacts 'autosave-ui-checks.txt'))
+    Get-Content (Join-Path $artifacts 'autosave-ui-checks.txt')
     Invoke-AppCheck @('--render-vertical',(Join-Path $artifacts 'vertical-clips.png'),(Join-Path $artifacts 'media-fixtures/preview.png'))
     Invoke-AppCheck @('--render-converter',(Join-Path $artifacts 'converter.png'),(Join-Path $artifacts 'media-fixtures/preview.png'))
     $clipArguments = $arguments | ForEach-Object { $_.Replace('CleanupMediaTests','ClipMediaTests') }

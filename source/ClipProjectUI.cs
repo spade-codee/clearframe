@@ -19,7 +19,7 @@ namespace ClearFrame {
         void UpdateClipProject(){
             openProject.Visibility=saveProject.Visibility=Mode()=="vertical"?Visibility.Visible:Visibility.Collapsed;
             openProject.IsEnabled=!busy;saveProject.IsEnabled=!busy&&info!=null;
-            saveProject.Content=ProjectDirty()?"Save project *":"Save project…";saveProject.ToolTip=projectPath??"Save your clip list to reopen later. Save clip first to include editor changes.";
+            saveProject.Content=ProjectDirty()?"Save project *":"Save project…";saveProject.ToolTip=projectPath??"Save your clip list to reopen later. Save clip first to include editor changes.";ScheduleRecovery();
         }
         async Task SaveClipProject(){
             if(busy||info==null)return;
@@ -37,7 +37,7 @@ namespace ClearFrame {
             input=source;info=metadata;ResetClipBatch();savedClips.AddRange(project.Clips.Select(c=>c.ToClip()));outputFile=null;progress.Value=0;
             fileLabel.Text=Path.GetFileName(source)+" · "+info.Width+" × "+info.Height+" · "+TimeSpan.FromSeconds(info.Duration).ToString(@"hh\:mm\:ss");
             if(savedClips.Count>0)LoadClip(savedClips[0]);else{ClearFrames();seconds.Text="0";clipStart.Text="0";clipEnd.Text=info.Duration.ToString("0.###",System.Globalization.CultureInfo.InvariantCulture);SetVerticalCrop();NewClip();}
-            projectPath=path.EndsWith(".bak",StringComparison.OrdinalIgnoreCase)?path.Substring(0,path.Length-4):path;projectSnapshot=ClipProject.Snapshot(input,savedClips);UpdateClipBatch();
+            projectPath=path.EndsWith(".bak",StringComparison.OrdinalIgnoreCase)?path.Substring(0,path.Length-4):path;projectSnapshot=ClipProject.Snapshot(input,savedClips);UpdateClipBatch();ResetDraftBaseline();
             status.Text="Opened "+Path.GetFileName(path)+" · "+savedClips.Count+" clips ready. Load frame to preview. Existing exports stay protected; choose a new folder or names to export again.";
         }
         async Task OpenClipProject(){

@@ -1,9 +1,12 @@
-# ClearFrame 0.9.0 for Windows
+# ClearFrame 0.10.0 for Windows
 
 A portable desktop downloader for YouTube videos, with source-quality video and sound, from 360p through 8K and uncapped best available.
 
 ## New in this version
 
+- **Timeline controls:** seek through the source, load still previews automatically, and mark clip start/end visually. Play/pause uses Windows decoding; FFmpeg still previews remain available if Windows cannot play the codec.
+- **Local recovery:** clip lists and unfinished editor fields are saved after a short idle period. **Recover…** restores a selected snapshot after checking the original source. Recovery keeps the last completed snapshot and leaves manual project files untouched. See [CLIPPING.md](CLIPPING.md) for timing, storage and limits.
+- **Unsaved-field warning:** closing or changing sources now also detects editor changes that have not yet been added to the clip list.
 - **Saved clip projects:** use **Save project** and **Open project** in the vertical editor to continue later. Projects keep your saved clip settings and verify the original source; a moved video can be located again. Save is manual, and reopened clips start Ready. See [CLIPPING.md](CLIPPING.md) for backups, relinking and workflow details.
 - **Named clip batches:** save up to 50 clip ranges from one local video, with independent crops and output sizes. Review, edit, remove or reorder them, then export pending clips to a folder. Cancellation and failures keep completed outputs; retry skips those completed clips within the current session.
 - **Vertical clips:** choose **••• > Create a vertical clip (9:16)…**, open a local video, set start/end times and position the crop. Export a separate 1080×1920 or 720×1280 H.264/AAC MP4. See [CLIPPING.md](CLIPPING.md) for the workflow and resizing limits.

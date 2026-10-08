@@ -1,5 +1,13 @@
 # Verification — 8 October 2026
 
+## Version 0.10.0
+
+- Thirteen recovery-format/filesystem checks passed for unfinished input preservation, independent saved recipes, atomic replacement, backups, locked/corrupt files, field limits, schema validation and timestamps. Separate app processes saved and restored recovery data without starting an export.
+- Forty-six offline editor-control checks passed, including draft dirty tracking, recovered raw inputs, timeline range markers, end-of-source seek bounds, simulated decoder failure and busy guards.
+- Eight asynchronous checks exercised the actual autosave path with synthetic video: initial snapshot, invalid unfinished fields and backup rotation, visible write failure with prior-file preservation, manual-project isolation, restoration, cancellation on source reset, a real FFmpeg timeline still preview, and end-of-video preview fallback.
+- The existing 34 cleanup/converter/vertical/batch/project media checks and nine other clip-media checks passed. Existing offline, download-history and project-restart checks passed.
+- The vertical-editor layout was rendered offline and visually inspected. Native Windows play/pause/audio playback, the recovery picker, file dialogs and full manual click-through remain unverified. The decoder failure test simulates the error handler; it does not establish which codecs any user's Windows installation can play. No new live YouTube download was performed.
+
 ## Version 0.9.0
 
 - Twenty-six project checks passed for recipe roundtrips, empty projects, source fingerprints, renamed identical sources, mismatched sources, cancellation, atomic replacement and backups, locked/corrupt files, invalid schema/settings, duplicate names, overwrite protection, size limits and dirty snapshots.
