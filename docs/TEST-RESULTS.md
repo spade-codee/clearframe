@@ -1,5 +1,13 @@
 # Verification — 8 October 2026
 
+## Version 0.9.0
+
+- Twenty-six project checks passed for recipe roundtrips, empty projects, source fingerprints, renamed identical sources, mismatched sources, cancellation, atomic replacement and backups, locked/corrupt files, invalid schema/settings, duplicate names, overwrite protection, size limits and dirty snapshots.
+- Separate application processes saved and reopened a project, restoring name/range/crop/size while resetting completion state to Ready. Source identity matched and no export started automatically.
+- Thirty-seven offline editor-control checks passed, including restored project state, cleared previews/output paths, dirty-state behavior and busy actions.
+- A saved project was reopened against a renamed byte-identical synthetic video and used to export a verified 720×1280 H.264/AAC clip. This passed with the prior 33 cleanup/batch/vertical/converter media cases and nine other clip-media cases. Existing offline suites passed.
+- Project buttons and batch review were rendered offline and visually inspected. Full manual save/open/relink/confirmation click-through remains unverified. No new live YouTube download was performed.
+
 ## Version 0.8.0
 
 - Twenty batch-clip validation checks passed for Windows filenames, reserved device names, Unicode names, case-insensitive duplicates, clip ranges and crop bounds, empty/oversized batches, order, and existing file/directory collisions.

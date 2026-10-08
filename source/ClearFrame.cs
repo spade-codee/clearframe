@@ -327,6 +327,8 @@ namespace ClearFrame {
     var app=new Application();app.DispatcherUnhandledException+=(s,e)=>{MessageBox.Show(e.Exception.Message,"ClearFrame");e.Handled=true;};
     if(args.Length>1&&args[0]=="--check-vertical"){VerticalClips.Check(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--check-batch-clips"){ClipBatch.Check(args[1]);return 0;}
+    if(args.Length>2&&args[0]=="--check-clip-projects"){ClipProject.Check(args[1],args[2]);return 0;}
+    if(args.Length>2&&args[0]=="--check-project-restart"){ClipProject.CheckRestart(args[1],args[2]);return 0;}
     if(args.Length>1&&args[0]=="--render-clip-batch"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",false,true).RenderClipBatch(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--render-vertical"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",false,true).Render(args[1],args.Length>2?args[2]:null);return 0;}
     if(args.Length>1&&args[0]=="--render-converter"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",true).Render(args[1],args.Length>2?args[2]:null);return 0;}

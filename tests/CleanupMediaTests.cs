@@ -27,6 +27,10 @@ class CleanupMediaTests {
             Run(ffmpeg, "-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc2=size=320x180:rate=24:duration=1.5,drawbox=x=260:y=20:w=40:h=20:color=white:t=fill", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=1.5", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", source);
             byte[] original = File.ReadAllBytes(source); var info = CleanupCore.ReadInfo(Probe(source));
             BatchChecks(source,info,args[1],log);
+            string projectFolder=Path.Combine(args[1],"project-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(projectFolder);string projectPath=Path.Combine(projectFolder,"clips.cfclips.json");
+            ClipProject.Save(projectPath,ClipProject.Capture(source,info,new[]{new NamedClip{Name="Reopened clip",Start=0.25,End=1.25,X=100,Y=10,Width=720,State="Complete"}},CancellationToken.None));
+            var reopened=ClipProject.Read(projectPath);string movedSource=Path.Combine(projectFolder,"renamed-source.mp4");File.Copy(source,movedSource);if(!ClipProject.Matches(reopened,movedSource,CancellationToken.None))throw new Exception("Relocated project source rejected.");var movedInfo=CleanupCore.ReadInfo(Probe(movedSource));ClipProject.VerifyMetadata(reopened,movedInfo);var reopenedClips=reopened.Clips.Select(c=>c.ToClip()).ToList();
+            ClipBatch.Export(ffmpeg,ffprobe,movedSource,movedInfo,reopenedClips,projectFolder,CancellationToken.None,null).GetAwaiter().GetResult();VerticalClips.Verify(Probe(reopenedClips[0].Output),info,720,0.25,1.25);log.AppendLine("PASS: saved project reopens against renamed identical source and exports a verified clip with restored range, crop and size.");
             foreach(int width in new[]{720,1080}){
                 string vertical=Path.Combine(args[1],"vertical-"+width+"-"+Guid.NewGuid().ToString("N")+".mp4");
                 var verticalArgs=VerticalClips.ExportArgs(source,vertical,info,230,10,width,0.25,1.25);Run(ffmpeg,verticalArgs.ToArray());VerticalClips.Verify(Probe(vertical),info,width,0.25,1.25);

@@ -4,6 +4,19 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-08
+
+### Added
+
+- Save and open `.cfclips.json` projects containing the source reference and up to 50 named clip recipes, including order, ranges, crops and output sizes. Empty projects are supported after opening a source.
+- Source fingerprint verification and relinking for renamed or moved unchanged videos. Failed or cancelled project opens preserve the current clip list.
+- Atomic project saves with a previous-version backup, strict schema/settings validation, size limits and protection for corrupt projects or backups. Save is manual; a dirty marker and discard prompt identify unsaved list changes.
+- Reopened clips start Ready without restoring completion state or automatically starting exports. Existing output files remain protected.
+
+### Verified
+
+- Twenty-six project checks, thirty-seven editor-control checks, separate-process project reopening, and a real media export using settings reopened against a renamed source.
+
 ## [0.8.0] - 2026-10-08
 
 ### Added
@@ -166,7 +179,8 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 - Playlist expansion, scheduled downloads, clips and account-required downloads are not implemented.
 - Live network tests covered short clips; full interactive restart/resume testing is not complete.
 
-[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/spade-codee/clearframe/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.9.0
 [0.8.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.8.0
 [0.7.0]: https://github.com/spade-codee/clearframe/releases/tag/v0.7.0
 [0.6.1]: https://github.com/spade-codee/clearframe/releases/tag/v0.6.1

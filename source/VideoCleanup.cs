@@ -127,7 +127,7 @@ namespace ClearFrame {
             var layout = new Grid { Margin = new Thickness(24) };
             foreach (var height in new[] { GridLength.Auto, GridLength.Auto, new GridLength(1,GridUnitType.Star), GridLength.Auto, GridLength.Auto, GridLength.Auto }) layout.RowDefinitions.Add(new RowDefinition { Height = height });
             var heading = new DockPanel { Margin = new Thickness(0,0,0,15) };
-            DockPanel.SetDock(open, Dock.Right); heading.Children.Add(open); heading.Children.Add(editorHeading); layout.Children.Add(heading);
+            DockPanel.SetDock(open, Dock.Right); heading.Children.Add(open); heading.Children.Add(editorHeading);SetupClipProject(heading); layout.Children.Add(heading);
             fileLabel.Margin = new Thickness(0,0,0,12); Grid.SetRow(fileLabel,1); layout.Children.Add(fileLabel);
             var frame = new Grid { Background = Brushes.Black, MinHeight = 200, ClipToBounds = true }; frame.Children.Add(picture); frame.Children.Add(canvas); canvas.Children.Add(selection); Grid.SetRow(frame,2); layout.Children.Add(frame);
             var optionRows=new StackPanel{Margin=new Thickness(0,14,0,10)};Grid.SetRow(optionRows,3);layout.Children.Add(optionRows);var options=new WrapPanel();optionRows.Children.Add(options);
@@ -221,6 +221,12 @@ namespace ClearFrame {
             LoadClip(savedClips[0]);check(clipName.Text=="Opening"&&Region()[0]==20&&clipEnd.Text=="2"&&picture.Source==null,"edit restores saved settings and clears stale preview");
             SetBusy(true);check(!saveClip.IsEnabled&&!newClip.IsEnabled&&!reviewClips.IsEnabled&&!clipName.IsEnabled,"batch controls disabled while processing");SetBusy(false);
             savedClips[0].State="Complete";SaveClip();check(savedClips[0].State=="Ready"&&savedClips[0].Output=="","editing completed clip creates pending revision");
+            check(ProjectDirty(),"unsaved clip list is dirty");projectSnapshot=ClipProject.Snapshot(input,savedClips);check(!ProjectDirty(),"successful project snapshot clears dirty state");
+            savedClips[0].State="Complete";check(!ProjectDirty(),"export completion does not change project recipes");savedClips.RemoveAt(1);check(ProjectDirty(),"removal changes project recipes");
+            var projectFixture=new ClipProjectData{Clips=ClipProject.Recipes(savedClips)};ApplyClipProject(projectFixture,"restored-source.mp4",info,"restored.cfclips.json");
+            check(savedClips.Count==1&&savedClips[0].State=="Ready"&&outputFile==null&&!ProjectDirty()&&picture.Source==null,"project restores ready clips without stale output or preview");
+            SetBusy(true);check(!openProject.IsEnabled&&!saveProject.IsEnabled,"project actions disabled during processing");SetBusy(false);
+            savedClips.Clear();check(ProjectDirty()&&saveProject.IsEnabled,"emptying project remains saveable and dirty");
             ResetClipBatch();check(savedClips.Count==0&&editingClip==null&&!reviewClips.IsEnabled,"new source clears session batch");
             method.SelectedIndex=0;check(clipOptions.Visibility==Visibility.Collapsed&&fields[2].IsEnabled,"leaving vertical restores cleanup controls");
             File.WriteAllText(report,checks+" offline editor control checks passed.");

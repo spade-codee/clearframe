@@ -2,7 +2,7 @@
 
 These are proposed features, not implemented promises or scheduled work.
 
-- Save and reopen clip projects across sessions. Named ranges and sequential batch export are available now within an editor session.
+- Autosave and crash recovery for clip projects. Manual project saving, reopening and source relinking are available now.
 - A playback timeline, caption styling and subject tracking for vertical clips.
 - Browse additional playlist pages beyond the first 200 entries.
 - Download only the requested time range over the network, with clear keyframe/precision tradeoffs. Current clips download the full source before trimming.

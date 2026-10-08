@@ -47,9 +47,11 @@ jobs:
 
           Open the setup file and click Install. Setup downloads and verifies the required video tools automatically. Keep your internet connection on. Then open ClearFrame from the Start menu. No terminal commands or administrator account are needed.
 
-          New in v0.8.0: batch up to 50 named vertical clips from one local video, each with its own range, crop position and output size. Choose More > Create a vertical clip, Save clip, then New for another. Use Clips to review, edit, reorder and export pending clips to a folder.
+          New in v0.9.0: save your vertical clip projects and reopen them later. Choose More > Create a vertical clip, add your named clips, then Save project. Open project restores names, order, ranges, crop positions and output sizes.
 
-          Exports run sequentially and are verified before saving. Cancellation or failure keeps completed clips; retry skips them. Existing files are never overwritten. Clip lists last only for the editor session, with a warning before discarding unexported clips. Crops remain fixed through each clip; resizing cannot add detail. SDR square-pixel sources only.
+          Projects verify the original source and let you locate it if renamed or moved. Keep that source video: projects contain settings, not media. Saves are manual and retain a previous-version backup. Reopened clips start Ready; they never export automatically, and existing output files remain protected. Save clip / Save changes before saving the project to include editor changes.
+
+          Batches of up to 50 clips, sequential verified exports, cancellation and retry remain available. Crops stay fixed through each clip; resizing cannot add detail. SDR square-pixel sources only.
 
           Windows playback conversion, audio-language selection, scheduled downloads and video cleanup remain available. Close the app before updating. Your download history and saved media are kept.
 

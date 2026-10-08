@@ -21,10 +21,10 @@ namespace ClearFrame {
             foreach(var button in new[]{saveClip,newClip,reviewClips}){button.Margin=new Thickness(0,17,6,0);clipOptions.Children.Add(button);}
             saveClip.Click+=(s,e)=>SaveClip();newClip.Click+=(s,e)=>NewClip();reviewClips.Click+=(s,e)=>ReviewClips();
         }
-        void UpdateClipBatch(){clipName.IsEnabled=saveClip.IsEnabled=newClip.IsEnabled=!busy&&info!=null;reviewClips.IsEnabled=!busy&&savedClips.Count>0;reviewClips.Content="Clips ("+savedClips.Count+")…";saveClip.Content=editingClip==null?"Save clip":"Save changes";}
+        void UpdateClipBatch(){clipName.IsEnabled=saveClip.IsEnabled=newClip.IsEnabled=!busy&&info!=null;reviewClips.IsEnabled=!busy&&savedClips.Count>0;reviewClips.Content="Clips ("+savedClips.Count+")…";saveClip.Content=editingClip==null?"Save clip":"Save changes";UpdateClipProject();}
         void NewClip(){editingClip=null;int n=1;while(savedClips.Any(c=>string.Equals(c.Name,"Clip "+n,StringComparison.OrdinalIgnoreCase)))n++;clipName.Text="Clip "+n;UpdateClipBatch();}
-        bool CanDiscardClips(){return !savedClips.Any(c=>c.State!="Complete")||MessageBox.Show(window,"Unexported clips are saved only in this editor session. Discard this clip list? Exported videos are kept.","ClearFrame · Unsaved clips",MessageBoxButton.YesNo,MessageBoxImage.Question)==MessageBoxResult.Yes;}
-        void ResetClipBatch(){savedClips.Clear();NewClip();}
+        bool CanDiscardClips(){return !ProjectDirty()||MessageBox.Show(window,"Your clip list has changes that are not saved in a project. Continue without saving them? Choose No, then Save project to keep this list. Exported videos are kept.","ClearFrame · Unsaved project",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No)==MessageBoxResult.Yes;}
+        void ResetClipBatch(){savedClips.Clear();projectPath=null;projectSnapshot=null;NewClip();}
         void SaveClip(){
             if(busy||info==null||Mode()!="vertical")return;
             try{
@@ -33,7 +33,7 @@ namespace ClearFrame {
                 if(savedClips.Any(c=>c!=editingClip&&string.Equals(c.Name,clip.Name,StringComparison.OrdinalIgnoreCase)))throw new Exception("Another clip already uses this name. Choose a unique name.");
                 int index=editingClip==null?-1:savedClips.IndexOf(editingClip);
                 if(index<0){if(savedClips.Count>=ClipBatch.Limit)throw new Exception("This batch already has 50 clips. Remove one before adding more.");savedClips.Add(clip);}else savedClips[index]=clip;
-                editingClip=clip;UpdateClipBatch();status.Text="Saved “"+clip.Name+"” to this session's clip list. Choose New for another, or Clips to review and export.";
+                editingClip=clip;UpdateClipBatch();status.Text="Added “"+clip.Name+"” to the clip list. New adds another; Clips reviews/exports; Save project keeps the list for later.";
             }catch(Exception ex){status.Text=ex.Message;}
         }
         void LoadClip(NamedClip clip){editingClip=clip;clipName.Text=clip.Name;clipStart.Text=clip.Start.ToString("0.###",CultureInfo.InvariantCulture);clipEnd.Text=clip.End.ToString("0.###",CultureInfo.InvariantCulture);verticalSize.SelectedIndex=clip.Width==720?1:0;SetRectangle(clip.X,clip.Y,0,0);ClearFrames();UpdateClipBatch();status.Text="Editing “"+clip.Name+"”. Load a frame to preview, then Save changes to update the list.";}
@@ -41,7 +41,7 @@ namespace ClearFrame {
             var dialog=new Window{Title="ClearFrame · Clip batch",Width=850,Height=490,MinWidth=760,MinHeight=420,Owner=window.IsVisible?window:null,WindowStartupLocation=WindowStartupLocation.CenterOwner,Background=window.Background,Foreground=window.Foreground,Resources=window.Resources,FontFamily=window.FontFamily};
             var grid=new Grid{Margin=new Thickness(24)};foreach(var height in new[]{GridLength.Auto,GridLength.Auto,new GridLength(1,GridUnitType.Star),GridLength.Auto})grid.RowDefinitions.Add(new RowDefinition{Height=height});dialog.Content=grid;
             grid.Children.Add(new TextBlock{Text="One source. Several moments.",FontSize=24,FontWeight=FontWeights.SemiBold});
-            note=new TextBlock{Text="Exports run in this order. Complete clips are skipped on retry. Clip lists last only for this editor session. Unsaved changes in the editor are not included.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,12,0,16)};Grid.SetRow(note,1);grid.Children.Add(note);
+            note=new TextBlock{Text="Exports run in this order. Complete clips are skipped on retry. Use Save project in the editor to keep this list for later. Save clip / Save changes before exporting or saving a project.",TextWrapping=TextWrapping.Wrap,Margin=new Thickness(0,12,0,16)};Grid.SetRow(note,1);grid.Children.Add(note);
             list=new ListBox{ItemsSource=savedClips,DisplayMemberPath="Summary",Background=new SolidColorBrush(Color.FromRgb(18,22,15)),Foreground=window.Foreground,BorderThickness=new Thickness(0),SelectedIndex=savedClips.Count>0?0:-1};Grid.SetRow(list,2);grid.Children.Add(list);
             var row=new WrapPanel{Margin=new Thickness(0,16,0,0)};Grid.SetRow(row,3);grid.Children.Add(row);
             var edit=new Button{Content="Edit selected"};var remove=new Button{Content="Remove"};var up=new Button{Content="Move up"};var down=new Button{Content="Move down"};var run=new Button{Content="Export pending clips…",Style=(Style)window.FindResource("Primary")};
@@ -49,7 +49,7 @@ namespace ClearFrame {
             var items=list;var message=note;
             edit.Click+=(s,e)=>{var clip=items.SelectedItem as NamedClip;if(clip==null)return;LoadClip(clip);dialog.Close();};
             remove.Click+=(s,e)=>{var clip=items.SelectedItem as NamedClip;if(clip==null)return;savedClips.Remove(clip);if(editingClip==clip)NewClip();items.Items.Refresh();UpdateClipBatch();run.IsEnabled=savedClips.Any(c=>c.State!="Complete");message.Text="Removed from this clip list. Any exported video is kept.";};
-            Action<int> move=offset=>{int index=items.SelectedIndex,target=index+offset;if(index<0||target<0||target>=savedClips.Count)return;var clip=savedClips[index];savedClips.RemoveAt(index);savedClips.Insert(target,clip);items.Items.Refresh();items.SelectedItem=clip;};up.Click+=(s,e)=>move(-1);down.Click+=(s,e)=>move(1);
+            Action<int> move=offset=>{int index=items.SelectedIndex,target=index+offset;if(index<0||target<0||target>=savedClips.Count)return;var clip=savedClips[index];savedClips.RemoveAt(index);savedClips.Insert(target,clip);items.Items.Refresh();items.SelectedItem=clip;UpdateClipBatch();};up.Click+=(s,e)=>move(-1);down.Click+=(s,e)=>move(1);
             run.IsEnabled=savedClips.Any(c=>c.State!="Complete");run.Click+=async(s,e)=>{dialog.Close();await ExportClipBatch();};return dialog;
         }
         void ReviewClips(){if(busy)return;ListBox list;TextBlock note;BatchWindow(out list,out note).ShowDialog();}
