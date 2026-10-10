@@ -22,6 +22,16 @@ Drag or click the timeline below the picture. Once you release it and briefly st
 
 Native playback depends on the codecs and media components installed in Windows. If Windows cannot decode a source, an error explains the limitation and timeline still-frame previews remain available through FFmpeg. You can also use **Convert a video for Windows** to create a compatible copy. Full interactive native playback has not yet been manually verified.
 
+## Undo and redo clip edits
+
+Use **Undo / Redo** below the editor fields or inside the batch window. **Ctrl+Z** undoes; **Ctrl+Y** or **Ctrl+Shift+Z** redoes. These shortcuts use the shared clip history while the vertical editor is active, including when a text field has focus.
+
+History includes names, start/end markers, crop position, output size, unfinished text, saving a clip, New/Edit selection, removal and ordering. Typing is grouped after about 600 ms without changes or when leaving a field. Explicit clip actions are separate steps; merely seeking to another preview frame does not create a step. Undo clears the preview; choose **Load frame** to inspect the restored settings. Making a new edit after undo discards the redo branch.
+
+Up to **100 undo steps** are held in memory. Opening another video, a project or a recovery snapshot, switching editing modes, or closing the editor clears history. Preview/export operations temporarily disable undo. Manual projects and local recovery do not store the undo stack; recovery saves the current restored fields and list after its usual idle delay.
+
+Undoing **Save clip / Save changes** restores the previous list and leaves the pre-save editor draft available. Restoring a clip revision that finished exporting keeps it **Complete** within this session. Exported files are never removed or changed by undo, and manual project files are not rewritten. If undo changes the list relative to your last project save, the save button shows an asterisk; save again when ready. Reopened projects/recovery snapshots still start clips Ready as described below.
+
 ## Export several named clips together
 
 ![Batch review with demonstration clip names](clip-batch.png)

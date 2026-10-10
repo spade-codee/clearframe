@@ -2,7 +2,7 @@
 
 These are proposed features, not implemented promises or scheduled work.
 
-- Undo/redo, recovery-file management and more interactive coverage of timeline playback. Local recovery snapshots and timeline seeking are available now.
+- Recovery-file management and more interactive coverage of timeline playback. Session undo/redo, local recovery snapshots and timeline seeking are available now.
 - Caption styling, portrait layout presets and subject tracking for vertical clips.
 - Browse additional playlist pages beyond the first 200 entries.
 - Download only the requested time range over the network, with clear keyframe/precision tradeoffs. Current clips download the full source before trimming.

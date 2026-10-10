@@ -35,6 +35,7 @@ The [clip range dialog](docs/clip-options.png) explains the full-source download
 - Save clip projects and reopen them later, with source-file verification, relinking moved originals and a previous-save backup. Projects store settings, not video; reopened clips start Ready and never export automatically.
 - Timeline seeking with FFmpeg still previews and **Set start / Set end** controls. Original-video play/pause uses Windows media decoding; unsupported codecs retain the still-preview workflow.
 - Automatic local recovery snapshots preserve the clip list and unfinished editor fields separately from manual projects. Restore through **Recover…**; only the last completed snapshot is recoverable.
+- Undo/redo for vertical clip fields, saved clips, removals and ordering, with keyboard shortcuts and up to 100 session steps. Exported files are kept; undo history is not saved across sessions.
 - Built-in **Convert a video for Windows** creates a separate H.264/AAC copy of an existing SDR video, without downloading it again.
 - Batches of up to 100 individual YouTube links, with validation and deduplication.
 - Playlist picker for choosing videos from the first 200 entries, with unavailable-item indicators and cancellation.

@@ -4,6 +4,20 @@ Changes follow semantic versioning. During `0.x`, minor releases may change beha
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-10
+
+### Added
+
+- Undo and redo in the vertical editor and batch window, with Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z. Covers raw unfinished fields, names, ranges, crop position, output size, clip saves, selection, removal and ordering.
+- Up to 100 undo steps within an editor session. Typing is grouped after a short pause or focus change; timeline navigation alone does not fill history. New edits discard the redo branch. Opening a video/project/recovery snapshot or changing editing modes starts fresh history.
+- Restored clip revisions retain their session export status, including exports completed after the history entry was captured. Undo never changes exported files or rewrites a manual project. Local recovery captures the current restored state, not the undo stack.
+
+### Fixed and verified
+
+- Reordering the list no longer marks unchanged editor fields as unsaved.
+- Preview area can shrink further to keep the added controls visible in smaller editor windows.
+- Thirty-five undo/redo control checks and twelve asynchronous recovery/timeline/media checks passed, including actual exported-file preservation. Existing offline and synthetic-media suites passed. Default and smaller editor layouts and the batch window were rendered and visually inspected; full manual interaction remains unverified.
+
 ## [0.10.0] - 2026-10-08
 
 ### Added

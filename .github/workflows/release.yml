@@ -47,11 +47,11 @@ jobs:
 
           Open the setup file and click Install. Setup downloads and verifies the required video tools automatically. Keep your internet connection on. Then open ClearFrame from the Start menu. No terminal commands or administrator account are needed.
 
-          New in v0.10.0: a vertical-clip timeline with still-frame seeking, Set start / Set end controls, and original-video play/pause where Windows can decode the source. FFmpeg still previews remain available when native playback fails.
+          New in v0.11.0: Undo / Redo in the vertical editor and clip batch window. Use Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z for names, timing, crops, output size, unfinished fields, clip saves, removals and ordering. Up to 100 steps are kept in this editor session; new edits discard the redo branch.
 
-          Automatic local recovery now preserves the saved clip list and unfinished editor fields after a short idle period. Recover restores a selected snapshot after verifying the source. Only the last completed snapshot is recoverable; manual project files are untouched. Closing or replacing a source also warns about uncommitted editor fields.
+          Undo keeps finished exports and their session completion status. It never rewrites a manual project or deletes an exported video. Recovery saves the current restored state, not the undo stack. Opening a video/project/recovery snapshot, switching editing modes or closing the editor clears history.
 
-          Manual clip projects still support source relinking and prior-save backups. Keep the original video. Reopened/recovered clips start Ready, never export automatically, and existing output files remain protected. Native Windows playback and full manual interaction remain unverified.
+          Reordering clips no longer marks unchanged editor fields as unsaved, and the preview fits smaller editor windows. Timeline previews, Windows-dependent original-video playback, local recovery and manual projects remain available. Keep the original source video; reopened projects and recovery snapshots start clips Ready and never export automatically.
 
           Batches of up to 50 clips, sequential verified exports, cancellation and retry remain available. Crops stay fixed through each clip; resizing cannot add detail. SDR square-pixel sources only.
 

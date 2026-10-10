@@ -333,9 +333,11 @@ namespace ClearFrame {
     if(args.Length>2&&args[0]=="--check-recovery-restart"){ClipRecovery.CheckRestart(args[1],args[2]);return 0;}
     if(args.Length>4&&args[0]=="--check-autosave-ui"){var owner=new MainWindow(true);var editor=new VideoCleanup(owner.Window,args[1],args[2],false,true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await editor.CheckAutosaveFlow(args[3],args[4]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}
     if(args.Length>1&&args[0]=="--render-clip-batch"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",false,true).RenderClipBatch(args[1]);return 0;}
+    if(args.Length>1&&args[0]=="--render-vertical-small"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",false,true).Render(args[1],args.Length>2?args[2]:null,880,700);return 0;}
     if(args.Length>1&&args[0]=="--render-vertical"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",false,true).Render(args[1],args.Length>2?args[2]:null);return 0;}
     if(args.Length>1&&args[0]=="--render-converter"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",true).Render(args[1],args.Length>2?args[2]:null);return 0;}
     if(args.Length>1&&args[0]=="--render-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"tools"),Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"test-state")).Render(args[1],args.Length>2?args[2]:null);return 0;}
+    if(args.Length>1&&args[0]=="--check-clip-history"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","",false,true).CheckClipHistory(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--check-editor"){var owner=new MainWindow(true);new VideoCleanup(owner.Window,"","").CheckOfflineInterface(args[1]);return 0;}
     if(args.Length>1&&args[0]=="--check-v04"){var main=new MainWindow(true);Exception failure=null;app.Dispatcher.BeginInvoke(new Action(async()=>{try{await main.CheckV04(args[1]);}catch(Exception ex){failure=ex;}finally{app.Dispatcher.InvokeShutdown();}}));Dispatcher.Run();if(failure!=null)throw failure;return 0;}
     if(args.Length>1&&args[0]=="--check-v05"){new MainWindow(true).CheckV05(args[1]);return 0;}

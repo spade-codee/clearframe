@@ -1,4 +1,11 @@
-# Verification — 8 October 2026
+# Verification — 10 October 2026
+
+## Version 0.11.0
+
+- Thirty-five undo/redo control checks passed: pending/unfinished inputs, redo branching, preview-only navigation, saved revisions and export status, selection, removal, ordering, dirty baselines, busy guards, shortcut routing, batch buttons, crop/size and timeline marks, 100-step bounds and source/mode reset.
+- Twelve asynchronous checks passed with synthetic media. These include the previous autosave/timeline cases plus autosaving undone/redone fields and removing/restoring a completed clip while checking the real MP4 remains byte-for-byte unchanged and no duplicate export appears.
+- Existing offline suites and the 34 cleanup/converter/vertical/batch/project media checks and nine other clip-media checks passed. Default and smaller editor layouts and the batch window were rendered offline and visually inspected.
+- Shortcut tests call the shared key handler; button tests raise routed control events. Full manual desktop interaction, native Windows playback, recovery/file dialogs and live YouTube downloads remain unverified in this release.
 
 ## Version 0.10.0
 

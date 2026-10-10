@@ -20,7 +20,7 @@ namespace ClearFrame {
         bool recoveryWriting,recoveryClosed;
         int recoveryGeneration;
         ClipDraft CaptureDraft(){return new ClipDraft{Name=clipName.Text,Start=clipStart.Text,End=clipEnd.Text,X=fields[0].Text,Y=fields[1].Text,Frame=seconds.Text,Size=verticalSize.SelectedIndex,EditingIndex=editingClip==null?-1:savedClips.IndexOf(editingClip)};}
-        string DraftSignature(){var draft=CaptureDraft();draft.Frame="";return ClipRecovery.DraftSnapshot(draft);}
+        string DraftSignature(){var draft=CaptureDraft();draft.Frame="";draft.EditingIndex=-1;return ClipRecovery.DraftSnapshot(draft);}
         void ResetDraftBaseline(){draftBaseline=DraftSignature();ScheduleRecovery();}
         bool EditorDraftDirty(){return info!=null&&draftBaseline!=null&&DraftSignature()!=draftBaseline;}
         void SetupRecovery(DockPanel heading,StackPanel rows,string directory){
@@ -91,6 +91,9 @@ namespace ClearFrame {
             clipName.Text="Changed draft";recoveryTick.Stop();using(var locked=new FileStream(firstPath,FileMode.Open,FileAccess.Read,FileShare.None)){await AutosaveRecovery();}check(recoveryNote.Text.Contains("could not be saved")&&ClipRecovery.Read(firstPath).Draft.Name=="Committed","write failure visible and prior snapshot preserved");
             check(File.ReadAllText(manual)==manualBytes,"autosave never writes manual project");
             var recovered=ClipRecovery.Read(firstPath);ApplyRecovery(recovered,source,info);recoveryTick.Stop();check(clipStart.Text=="1."&&clipEnd.Text==""&&fields[0].Text=="-"&&savedClips[0].Start==0&&savedClips[0].State=="Ready","recovery applies unfinished inputs without changing valid recipe");
+            InitializeClipHistory();clipName.Text="Undo this draft";TravelClipHistory(-1);recoveryTick.Stop();await AutosaveRecovery();check(ClipRecovery.Read(recoveryPath).Draft.Name==recovered.Draft.Name,"autosave captures undone editor state");TravelClipHistory(1);recoveryTick.Stop();await AutosaveRecovery();check(ClipRecovery.Read(recoveryPath).Draft.Name=="Undo this draft","autosave captures redone editor state");
+            string exportFolder=Path.Combine(Path.GetDirectoryName(recoveryDirectory),"history-exports");Directory.CreateDirectory(exportFolder);var exported=savedClips[0];await ClipBatch.Export(Tool("ffmpeg"),Tool("ffprobe"),input,info,savedClips,exportFolder,CancellationToken.None,null);byte[] exportedBytes=File.ReadAllBytes(exported.Output);
+            RemoveSavedClip(exported);TravelClipHistory(-1);check(savedClips[0]==exported&&exported.State=="Complete"&&File.ReadAllBytes(exported.Output).SequenceEqual(exportedBytes),"undo restores completed recipe without changing actual exported file");TravelClipHistory(1);check(savedClips.Count==0&&File.Exists(exported.Output)&&Directory.GetFiles(exportFolder).Length==1,"redo removal retains export without creating another file");
             int files=Directory.GetFiles(recoveryDirectory).Length;var pending=AutosaveRecovery();ResetRecovery();recoveryTick.Stop();await pending;check(Directory.GetFiles(recoveryDirectory).Length==files,"source reset cancels pending recovery generation");
             timeline.Value=0.75;seekTick.Stop();await Frame(false);check(originalFrame!=null&&Math.Abs(double.Parse(seconds.Text,System.Globalization.CultureInfo.InvariantCulture)-0.75)<0.001,"timeline seeking generates a real FFmpeg still frame");
             timeline.Value=info.Duration;seekTick.Stop();await Frame(false);check(originalFrame!=null,"timeline end seek retains the final available video frame");

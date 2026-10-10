@@ -1,8 +1,13 @@
-# ClearFrame 0.10.0 for Windows
+# ClearFrame 0.11.0 for Windows
 
 A portable desktop downloader for YouTube videos, with source-quality video and sound, from 360p through 8K and uncapped best available.
 
 ## New in this version
+
+- **Undo / Redo:** reverse clip-field edits, saved changes, removals and ordering from the vertical editor or batch window. Use Ctrl+Z, Ctrl+Y or Ctrl+Shift+Z. Up to 100 steps are kept in the current session; exported files stay untouched. See [CLIPPING.md](CLIPPING.md) for history boundaries and project/recovery behavior.
+- **Cleaner dirty tracking:** moving a clip in the batch no longer marks unchanged editor fields as unsaved. The preview can shrink further in smaller windows to keep the controls visible.
+
+## Other recent features
 
 - **Timeline controls:** seek through the source, load still previews automatically, and mark clip start/end visually. Play/pause uses Windows decoding; FFmpeg still previews remain available if Windows cannot play the codec.
 - **Local recovery:** clip lists and unfinished editor fields are saved after a short idle period. **Recover…** restores a selected snapshot after checking the original source. Recovery keeps the last completed snapshot and leaves manual project files untouched. See [CLIPPING.md](CLIPPING.md) for timing, storage and limits.
